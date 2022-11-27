@@ -3,6 +3,7 @@ package com.flz.downloadandupload.common.utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -29,20 +30,23 @@ public class FileUtils implements InitializingBean {
     private static final String FILE_NAME_SEPARATOR = "-";
 
     @Async
-    public CompletableFuture<String> uploadToDisk(String originalFileName, InputStream inputStream) {
+    public CompletableFuture<Pair<String, String>> uploadToDisk(String originalFileName, InputStream inputStream) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String prefix = getPrefix(originalFileName);
                 String pureFileName = getPureFileName(originalFileName);
-                String finalFileName = String.join(FILE_NAME_SEPARATOR, pureFileName, String.valueOf(System.currentTimeMillis()), UUID.randomUUID().toString());
+                String finalFilePathStr = String.join(FILE_NAME_SEPARATOR,
+                                pureFileName,
+                                String.valueOf(System.currentTimeMillis()),
+                                UUID.randomUUID().toString())
+                        .concat(DOT)
+                        .concat(prefix);
                 Path filePath = Path.of(uploadBase.toString()
                         .concat(FILE_SEPARATOR)
-                        .concat(finalFileName)
-                        .concat(DOT)
-                        .concat(prefix == null ? "" : prefix));
+                        .concat(finalFilePathStr));
                 Files.createFile(filePath);
                 Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-                return finalFileName;
+                return Pair.of(pureFileName, finalFilePathStr);
             } catch (IOException e) {
                 log.error("upload file failed:{}", e);
                 throw new RuntimeException(e);

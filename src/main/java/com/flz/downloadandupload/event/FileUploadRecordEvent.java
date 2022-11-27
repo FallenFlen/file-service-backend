@@ -12,4 +12,8 @@ public class FileUploadRecordEvent extends BaseApplicationEvent {
     public FileUploadRecordEvent(FileValueObject fileValueObject) {
         super(fileValueObject);
     }
+
+    public FileUploadRecordEvent(String name, String path) {
+        this(new FileValueObject(name, path));
+    }
 }
