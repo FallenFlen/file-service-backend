@@ -53,7 +53,8 @@ public class FileUtils implements InitializingBean {
                         .concat(finalFilePathStr));
                 Files.createFile(filePath);
                 Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-                return Pair.of(getPureFileName(finalFilePathStr), finalFilePathStr);
+                // 原始未加工的文件名需要保存至上传记录的db中
+                return Pair.of(pureFileName, finalFilePathStr);
             } catch (IOException e) {
                 log.error("upload file failed:{}", e);
                 throw new RuntimeException(e);
