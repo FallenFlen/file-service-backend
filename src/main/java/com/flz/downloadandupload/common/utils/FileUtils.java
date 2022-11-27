@@ -46,7 +46,7 @@ public class FileUtils implements InitializingBean {
                         .concat(finalFilePathStr));
                 Files.createFile(filePath);
                 Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-                return Pair.of(pureFileName, finalFilePathStr);
+                return Pair.of(getPureFileName(finalFilePathStr), finalFilePathStr);
             } catch (IOException e) {
                 log.error("upload file failed:{}", e);
                 throw new RuntimeException(e);
