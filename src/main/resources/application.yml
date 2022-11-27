@@ -2,7 +2,7 @@ spring:
   application:
     name: file-service
   datasource:
-    url: jdbc:mysql://localhost:3306/springboot_improve?serverTimezone=Asia/Shanghai&useSSL=false&characterEncoding=utf8&useUnicode=true
+    url: jdbc:mysql://localhost:3306/file-service?serverTimezone=Asia/Shanghai&useSSL=false&characterEncoding=utf8&useUnicode=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: flms04
