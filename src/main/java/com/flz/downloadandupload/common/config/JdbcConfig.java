@@ -4,13 +4,11 @@ import com.flz.downloadandupload.common.utils.IdGenerator;
 import com.flz.downloadandupload.persist.dataobject.base.BaseDO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 import org.springframework.data.relational.core.mapping.event.BeforeSaveCallback;
 
 import java.time.LocalDateTime;
 
 @Configuration
-@EnableJdbcRepositories(basePackages = "com.flz.downloadandupload")
 public class JdbcConfig {
 
     @Bean
