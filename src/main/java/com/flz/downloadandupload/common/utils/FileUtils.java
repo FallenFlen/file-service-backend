@@ -73,7 +73,7 @@ public class FileUtils implements InitializingBean {
             Files.createDirectory(uploadBase);
         }
 
-        if (Files.exists(downloadBase)) {
+        if (!Files.exists(downloadBase)) {
             Files.createDirectory(downloadBase);
         }
     }
