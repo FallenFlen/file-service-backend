@@ -1,6 +1,6 @@
 package com.flz.downloadandupload.domain.aggregate;
 
-import com.flz.downloadandupload.domain.base.AuditAggregateRoot;
+import com.flz.downloadandupload.domain.aggregate.base.AuditAggregateRoot;
 import com.flz.downloadandupload.domain.command.FileUploadRecordCreateCommand;
 import lombok.*;
 

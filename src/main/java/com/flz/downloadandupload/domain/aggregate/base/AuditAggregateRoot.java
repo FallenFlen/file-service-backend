@@ -1,4 +1,4 @@
-package com.flz.downloadandupload.domain.base;
+package com.flz.downloadandupload.domain.aggregate.base;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
