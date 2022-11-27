@@ -19,18 +19,25 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @Slf4j
 public class FileUtils implements InitializingBean {
-    @Value("${file.upload.base-path}")
-    private String uploadBasePath;
-    @Value("${file.download.base-path}")
-    private String downloadBasePath;
-    private Path uploadBase;
-    private Path downloadBase;
+    @Value("${file.common.upload.base-path}")
+    private String commonUploadBasePathStr;
+    @Value("${file.common.download.base-path}")
+    private String commonDownloadBasePathStr;
+    @Value("${file.common.upload.base-path}")
+    private String advanceUploadBasePathStr;
+    @Value("${file.common.download.base-path}")
+    private String advanceDownloadBasePathStr;
+    private Path commonUploadBasePath;
+    private Path commonDownloadBase;
+    private Path advanceUploadBasePath;
+    private Path advanceDownloadBasePath;
+
     private static final String FILE_SEPARATOR = File.separator;
     private static final String DOT = ".";
     private static final String FILE_NAME_SEPARATOR = "-";
 
     @Async
-    public CompletableFuture<Pair<String, String>> uploadToDisk(String originalFileName, InputStream inputStream) {
+    public CompletableFuture<Pair<String, String>> commonUploadToDisk(String originalFileName, InputStream inputStream) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String prefix = getPrefix(originalFileName);
@@ -41,7 +48,7 @@ public class FileUtils implements InitializingBean {
                                 UUID.randomUUID().toString())
                         .concat(DOT)
                         .concat(prefix);
-                Path filePath = Path.of(uploadBase.toString()
+                Path filePath = Path.of(commonUploadBasePath.toString()
                         .concat(FILE_SEPARATOR)
                         .concat(finalFilePathStr));
                 Files.createFile(filePath);
@@ -66,15 +73,25 @@ public class FileUtils implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.uploadBase = Path.of(uploadBasePath.replace("/", FILE_SEPARATOR));
-        this.downloadBase = Path.of(downloadBasePath.replace("/", FILE_SEPARATOR));
+        this.commonUploadBasePath = Path.of(commonUploadBasePathStr.replace("/", FILE_SEPARATOR));
+        this.commonDownloadBase = Path.of(commonDownloadBasePathStr.replace("/", FILE_SEPARATOR));
+        this.advanceUploadBasePath = Path.of(advanceUploadBasePathStr.replace("/", FILE_SEPARATOR));
+        this.advanceDownloadBasePath = Path.of(advanceDownloadBasePathStr.replace("/", FILE_SEPARATOR));
 
-        if (!Files.exists(uploadBase)) {
-            Files.createDirectory(uploadBase);
+        if (!Files.exists(commonUploadBasePath)) {
+            Files.createDirectory(commonUploadBasePath);
         }
 
-        if (!Files.exists(downloadBase)) {
-            Files.createDirectory(downloadBase);
+        if (!Files.exists(commonDownloadBase)) {
+            Files.createDirectory(commonDownloadBase);
+        }
+
+        if (!Files.exists(advanceUploadBasePath)) {
+            Files.createDirectory(advanceUploadBasePath);
+        }
+
+        if (!Files.exists(advanceDownloadBasePath)) {
+            Files.createDirectory(advanceDownloadBasePath);
         }
     }
 }

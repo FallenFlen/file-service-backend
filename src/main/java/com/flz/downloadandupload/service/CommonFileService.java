@@ -18,7 +18,7 @@ public class CommonFileService {
     private final FileUtils fileUtils;
 
     public FileUploadResponseDTO upload(MultipartFile file) throws IOException {
-        Pair<String, String> uploadResult = fileUtils.uploadToDisk(file.getOriginalFilename(), file.getInputStream())
+        Pair<String, String> uploadResult = fileUtils.commonUploadToDisk(file.getOriginalFilename(), file.getInputStream())
                 .join();
         eventPublisher.publishEvent(new FileUploadRecordEvent(uploadResult.getFirst(), uploadResult.getSecond()));
         return new FileUploadResponseDTO(uploadResult.getFirst());

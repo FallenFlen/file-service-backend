@@ -10,7 +10,13 @@ spring:
     default-property-inclusion: non_null
 
 file:
-  download:
-    base-path: "D:/software/dev/test/download/"
-  upload:
-    base-path: "D:/software/dev/test/upload/"
+  common:
+    download:
+      base-path: "D:/software/dev/test/download/common"
+    upload:
+      base-path: "D:/software/dev/test/upload/common"
+  advance:
+    download:
+      base-path: "D:/software/dev/test/download/advance"
+    upload:
+      base-path: "D:/software/dev/test/upload/advance"
