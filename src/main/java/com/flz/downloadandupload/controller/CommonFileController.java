@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.controller;
 
 import com.flz.downloadandupload.common.dto.ResponseResult;
+import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
 import com.flz.downloadandupload.service.CommonFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,8 +20,8 @@ public class CommonFileController {
 
     @PostMapping("/upload")
     public ResponseResult upload(@RequestParam("file") MultipartFile file) throws IOException {
-        String filePath = commonFileService.upload(file);
-        return ResponseResult.withDefault(filePath)
+        FileUploadResponseDTO responseDTO = commonFileService.upload(file);
+        return ResponseResult.withDefault(responseDTO)
                 .withMessage("upload file successfully");
     }
 }

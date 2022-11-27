@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.service;
 
 import com.flz.downloadandupload.common.utils.FileUtils;
+import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
 import com.flz.downloadandupload.event.FileUploadRecordEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,10 +17,10 @@ public class CommonFileService {
     private final ApplicationEventPublisher eventPublisher;
     private final FileUtils fileUtils;
 
-    public String upload(MultipartFile file) throws IOException {
+    public FileUploadResponseDTO upload(MultipartFile file) throws IOException {
         Pair<String, String> uploadResult = fileUtils.uploadToDisk(file.getOriginalFilename(), file.getInputStream())
                 .join();
         eventPublisher.publishEvent(new FileUploadRecordEvent(uploadResult.getFirst(), uploadResult.getSecond()));
-        return uploadResult.getSecond();
+        return new FileUploadResponseDTO(uploadResult.getFirst());
     }
 }
