@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/files/common")
@@ -16,7 +18,7 @@ public class CommonFileController {
     private final CommonFileService commonFileService;
 
     @PostMapping("/upload")
-    public ResponseResult upload(@RequestParam("file") MultipartFile file) {
+    public ResponseResult upload(@RequestParam("file") MultipartFile file) throws IOException {
         String filePath = commonFileService.upload(file);
         return ResponseResult.withDefault(filePath)
                 .withMessage("upload file successfully");
