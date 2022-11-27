@@ -21,6 +21,6 @@ public class CommonFileService {
         Pair<String, String> uploadResult = fileUtils.commonUploadToDisk(file.getOriginalFilename(), file.getInputStream())
                 .join();
         eventPublisher.publishEvent(new FileUploadRecordEvent(uploadResult.getFirst(), uploadResult.getSecond()));
-        return new FileUploadResponseDTO(uploadResult.getFirst());
+        return new FileUploadResponseDTO(uploadResult.getSecond());
     }
 }
