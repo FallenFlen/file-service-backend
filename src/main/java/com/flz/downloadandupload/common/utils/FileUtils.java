@@ -38,10 +38,11 @@ public class FileUtils implements InitializingBean {
     private static final String FILE_NAME_SEPARATOR = "-";
 
     public byte[] commonDownload(String path) {
-        Path filePath = Path.of(path.concat(FILE_SEPARATOR));
+        Path filePath = Path.of(commonUploadBasePathStr.concat(FILE_SEPARATOR).concat(path));
         try {
             return Files.readAllBytes(filePath);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new BusinessException("file download failed:" + e.getMessage());
         }
     }
