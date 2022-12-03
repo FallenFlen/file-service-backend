@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
@@ -23,7 +24,7 @@ public class CommonFileController {
     }
 
     @GetMapping("/download")
-    public void download(@RequestParam("path") String path) {
-        commonFileService.download(path);
+    public void download(@RequestParam("path") String path, HttpServletResponse response) {
+        commonFileService.download(path, response);
     }
 }

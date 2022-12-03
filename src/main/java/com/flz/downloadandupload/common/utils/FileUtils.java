@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.common.utils;
 
+import com.flz.downloadandupload.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,15 @@ public class FileUtils implements InitializingBean {
     private static final String FILE_SEPARATOR = File.separator;
     private static final String DOT = ".";
     private static final String FILE_NAME_SEPARATOR = "-";
+
+    public byte[] commonDownload(String path) {
+        Path filePath = Path.of(path.concat(FILE_SEPARATOR));
+        try {
+            return Files.readAllBytes(filePath);
+        } catch (IOException e) {
+            throw new BusinessException("file download failed:" + e.getMessage());
+        }
+    }
 
     @Async
     public CompletableFuture<Pair<String, String>> commonUploadToDisk(String originalFileName, InputStream inputStream) {

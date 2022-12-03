@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.service;
 
 import com.flz.downloadandupload.common.utils.FileUtils;
+import com.flz.downloadandupload.common.utils.ResponseUtils;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
 import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
@@ -11,6 +12,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Service
@@ -28,7 +30,9 @@ public class CommonFileService {
         return new FileUploadResponseDTO(uploadResult.getSecond());
     }
 
-    public void download(String path) {
+    public void download(String path, HttpServletResponse response) {
         FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository.findByPath(path);
+        byte[] content = fileUtils.commonDownload(fileUploadRecord.getPath());
+        ResponseUtils.responseFile(response, fileUploadRecord.getPath(), content);
     }
 }
