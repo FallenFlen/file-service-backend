@@ -18,7 +18,7 @@ public class CommonFileController {
     @PostMapping("/upload")
     public ResponseResult upload(@RequestParam("file") MultipartFile file) throws IOException {
         FileUploadResponseDTO responseDTO = commonFileService.upload(file);
-        return ResponseResult.withDefault(responseDTO)
+        return ResponseResult.withDefaultData(responseDTO)
                 .withMessage("upload file successfully");
     }
 

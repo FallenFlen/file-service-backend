@@ -13,7 +13,13 @@ public class ResponseResult {
     private Object data;
     private String message;
 
-    public static ResponseResult withDefault(Object data) {
+    public static ResponseResult withDefaultMessage(String message) {
+        return ResponseResult.builder()
+                .message(message)
+                .build();
+    }
+
+    public static ResponseResult withDefaultData(Object data) {
         return ResponseResult.builder()
                 .data(data)
                 .message("success")
