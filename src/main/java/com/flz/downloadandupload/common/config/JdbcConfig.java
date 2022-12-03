@@ -18,7 +18,6 @@ public class JdbcConfig {
                 dataObject.setId(IdGenerator.randomId());
                 dataObject.setDeleted(Boolean.FALSE);
                 dataObject.setCreateTime(LocalDateTime.now());
-                dataObject.setUpdateTime(LocalDateTime.now());
             }
             dataObject.setUpdateTime(LocalDateTime.now());
             return dataObject;
