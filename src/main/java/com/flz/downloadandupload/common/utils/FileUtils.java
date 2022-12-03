@@ -1,6 +1,5 @@
 package com.flz.downloadandupload.common.utils;
 
-import com.flz.downloadandupload.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,8 +41,8 @@ public class FileUtils implements InitializingBean {
         try {
             return Files.readAllBytes(filePath);
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new BusinessException("file download failed:" + e.getMessage());
+            log.error("common download file failed:{}", e);
+            throw new RuntimeException("file download failed:" + e.getMessage());
         }
     }
 
