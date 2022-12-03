@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface FileUploadRecordDomainRepository {
     void saveAll(List<FileUploadRecord> fileUploadRecords);
+
+    FileUploadRecord findByPath(String path);
 }

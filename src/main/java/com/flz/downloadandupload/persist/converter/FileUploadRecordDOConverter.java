@@ -11,4 +11,6 @@ public interface FileUploadRecordDOConverter {
     FileUploadRecordDOConverter INSTANCE = Mappers.getMapper(FileUploadRecordDOConverter.class);
 
     FileUploadRecordDO toDO(FileUploadRecord fileUploadRecord);
+
+    FileUploadRecord toDomain(FileUploadRecordDO fileUploadRecordDO);
 }

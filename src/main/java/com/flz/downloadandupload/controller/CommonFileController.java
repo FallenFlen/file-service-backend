@@ -4,10 +4,7 @@ import com.flz.downloadandupload.common.dto.ResponseResult;
 import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
 import com.flz.downloadandupload.service.CommonFileService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,5 +20,10 @@ public class CommonFileController {
         FileUploadResponseDTO responseDTO = commonFileService.upload(file);
         return ResponseResult.withDefault(responseDTO)
                 .withMessage("upload file successfully");
+    }
+
+    @GetMapping("/download")
+    public void download(@RequestParam("path") String path) {
+        commonFileService.download(path);
     }
 }

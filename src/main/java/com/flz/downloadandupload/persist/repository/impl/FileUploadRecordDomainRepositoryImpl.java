@@ -24,4 +24,11 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
                 .collect(Collectors.toList());
         jdbcRepository.saveAll(fileUploadRecordDOS);
     }
+
+    @Override
+    public FileUploadRecord findByPath(String path) {
+        return jdbcRepository.findFirstByPathAndDeletedIsFalse(path)
+                .map(converter::toDomain)
+                .orElseThrow(() -> new RuntimeException("file not found with path:" + path));
+    }
 }
