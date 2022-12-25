@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.persist.dataobject;
 
+import com.flz.downloadandupload.domain.enums.FileUploadRecordStatus;
 import com.flz.downloadandupload.persist.dataobject.base.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,4 +16,8 @@ import org.springframework.data.relational.core.mapping.Table;
 public class FileUploadRecordDO extends BaseDO {
     private String name;
     private String path;
+    private Long size;
+    private FileUploadRecordStatus status;
+    private String md5;
+    private Boolean isLargeFile;
 }
