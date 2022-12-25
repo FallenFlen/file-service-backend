@@ -52,10 +52,11 @@ public class FileUtils implements InitializingBean {
             try {
                 String prefix = getPrefix(originalFileName);
                 String pureFileName = getPureFileName(originalFileName);
-                String finalFilePathStr = String.join(FILE_NAME_SEPARATOR,
-                                pureFileName,
-                                String.valueOf(System.currentTimeMillis()),
-                                UUID.randomUUID().toString())
+                String mixedFileName = String.join(FILE_NAME_SEPARATOR,
+                        pureFileName,
+                        String.valueOf(System.currentTimeMillis()),
+                        UUID.randomUUID().toString());
+                String finalFilePathStr = mixedFileName
                         .concat(DOT)
                         .concat(prefix);
                 Path filePath = Path.of(commonUploadBasePath.toString()
@@ -63,8 +64,7 @@ public class FileUtils implements InitializingBean {
                         .concat(finalFilePathStr));
                 Files.createFile(filePath);
                 Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-                // 原始未加工的文件名需要保存至上传记录的db中
-                return Pair.of(pureFileName, finalFilePathStr);
+                return Pair.of(mixedFileName, finalFilePathStr);
             } catch (IOException e) {
                 log.error("upload file failed:{}", e);
                 throw new RuntimeException(e);

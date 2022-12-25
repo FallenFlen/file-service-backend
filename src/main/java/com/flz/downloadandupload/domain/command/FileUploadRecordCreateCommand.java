@@ -10,4 +10,6 @@ import lombok.*;
 public class FileUploadRecordCreateCommand {
     private String name;
     private String path;
+    private Long size;
+    private String md5;
 }

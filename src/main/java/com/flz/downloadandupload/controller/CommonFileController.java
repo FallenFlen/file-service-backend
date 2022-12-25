@@ -1,6 +1,5 @@
 package com.flz.downloadandupload.controller;
 
-import com.flz.downloadandupload.common.dto.ResponseResult;
 import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
 import com.flz.downloadandupload.service.CommonFileService;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +16,8 @@ public class CommonFileController {
     private final CommonFileService commonFileService;
 
     @PostMapping("/upload")
-    public ResponseResult upload(@RequestParam("file") MultipartFile file) throws IOException {
-        FileUploadResponseDTO responseDTO = commonFileService.upload(file);
-        return ResponseResult.withDefaultData(responseDTO)
-                .withMessage("upload file successfully");
+    public FileUploadResponseDTO upload(@RequestParam("file") MultipartFile file) throws IOException {
+        return commonFileService.upload(file);
     }
 
     @GetMapping("/download")

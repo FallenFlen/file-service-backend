@@ -1,6 +1,5 @@
 package com.flz.downloadandupload.controller;
 
-import com.flz.downloadandupload.common.dto.ResponseResult;
 import com.flz.downloadandupload.dto.request.ChunkRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdvanceFileController {
 
     @PostMapping("/chunk")
-    public ResponseResult upload(ChunkRequestDTO requestDTO) {
-        return ResponseResult.withDefaultMessage("upload file successfully");
+    public void upload(ChunkRequestDTO requestDTO) {
+
     }
 }
