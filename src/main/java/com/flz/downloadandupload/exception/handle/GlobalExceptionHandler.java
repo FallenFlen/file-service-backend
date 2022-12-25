@@ -1,6 +1,6 @@
 package com.flz.downloadandupload.exception.handle;
 
-import com.flz.downloadandupload.common.dto.ResponseResult;
+import com.flz.downloadandupload.common.dto.ErrorResult;
 import com.flz.downloadandupload.exception.BusinessException;
 import com.flz.downloadandupload.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -9,19 +9,27 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseResult handleNotFoundException(NotFoundException e) {
-        return ResponseResult.withDefaultMessage(e.getMessage());
+    public ErrorResult handleNotFoundException(NotFoundException e) {
+        return ErrorResult.of(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseResult handleBusinessException(BusinessException e) {
-        return ResponseResult.withDefaultMessage(e.getMessage());
+    public ErrorResult handleBusinessException(BusinessException e) {
+        log.error(e.toString());
+        return ErrorResult.of(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResult handleOtherException(Exception e) {
+        log.error(e.toString());
+        return ErrorResult.of(e.getMessage());
     }
 }
