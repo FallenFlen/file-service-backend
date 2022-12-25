@@ -9,6 +9,7 @@ import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +30,7 @@ public class CommonFileService {
                 .name(uploadResult.getFirst())
                 .path(uploadResult.getSecond())
                 .size(file.getSize())
+                .md5(DigestUtils.md5DigestAsHex(file.getInputStream()))
                 .build();
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(command);
         fileUploadRecord.upload(true);

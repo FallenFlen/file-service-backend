@@ -26,6 +26,8 @@ public class FileUploadRecord extends AuditAggregateRoot {
                 .path(command.getPath())
                 .size(command.getSize())
                 .md5(command.getMd5())
+                .isLargeFile(Boolean.FALSE)
+                .status(FileUploadRecordStatus.INCOMPLETE)
                 .build();
     }
 
