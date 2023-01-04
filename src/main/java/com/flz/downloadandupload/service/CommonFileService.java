@@ -5,9 +5,9 @@ import com.flz.downloadandupload.common.utils.ResponseUtils;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.command.FileUploadRecordCreateCommand;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
+import com.flz.downloadandupload.domain.valueobject.FileValueObject;
 import com.flz.downloadandupload.dto.response.FileUploadResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,11 +24,10 @@ public class CommonFileService {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
 
     public FileUploadResponseDTO upload(MultipartFile file) throws IOException {
-        Pair<String, String> uploadResult = fileUtils.commonUploadToDisk(file.getOriginalFilename(), file.getInputStream())
-                .join();
+        FileValueObject uploadResult = fileUtils.commonUploadToDisk(file.getOriginalFilename(), file.getInputStream());
         FileUploadRecordCreateCommand command = FileUploadRecordCreateCommand.builder()
-                .name(uploadResult.getFirst())
-                .path(uploadResult.getSecond())
+                .name(uploadResult.getName())
+                .path(uploadResult.getPath())
                 .size(file.getSize())
                 .md5(DigestUtils.md5DigestAsHex(file.getInputStream()))
                 .build();

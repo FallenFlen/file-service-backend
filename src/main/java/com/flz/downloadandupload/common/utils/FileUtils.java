@@ -1,10 +1,9 @@
 package com.flz.downloadandupload.common.utils;
 
+import com.flz.downloadandupload.domain.valueobject.FileValueObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -14,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -46,30 +44,27 @@ public class FileUtils implements InitializingBean {
         }
     }
 
-    @Async
-    public CompletableFuture<Pair<String, String>> commonUploadToDisk(String originalFileName, InputStream inputStream) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                String prefix = getPrefix(originalFileName);
-                String pureFileName = getPureFileName(originalFileName);
-                String mixedFileName = String.join(FILE_NAME_SEPARATOR,
-                        pureFileName,
-                        String.valueOf(System.currentTimeMillis()),
-                        UUID.randomUUID().toString());
-                String finalFilePathStr = mixedFileName
-                        .concat(DOT)
-                        .concat(prefix);
-                Path filePath = Path.of(commonUploadBasePath.toString()
-                        .concat(FILE_SEPARATOR)
-                        .concat(finalFilePathStr));
-                Files.createFile(filePath);
-                Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-                return Pair.of(mixedFileName, finalFilePathStr);
-            } catch (IOException e) {
-                log.error("upload file failed:{}", e);
-                throw new RuntimeException(e);
-            }
-        });
+    public FileValueObject commonUploadToDisk(String originalFileName, InputStream inputStream) {
+        try {
+            String prefix = getPrefix(originalFileName);
+            String pureFileName = getPureFileName(originalFileName);
+            String mixedFileName = String.join(FILE_NAME_SEPARATOR,
+                    pureFileName,
+                    String.valueOf(System.currentTimeMillis()),
+                    UUID.randomUUID().toString());
+            String finalFilePathStr = mixedFileName
+                    .concat(DOT)
+                    .concat(prefix);
+            Path filePath = Path.of(commonUploadBasePath.toString()
+                    .concat(FILE_SEPARATOR)
+                    .concat(finalFilePathStr));
+            Files.createFile(filePath);
+            Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+            return new FileValueObject(mixedFileName, finalFilePathStr);
+        } catch (IOException e) {
+            log.error("upload file failed:{}", e);
+            throw new RuntimeException(e);
+        }
     }
 
     private String getPrefix(String originalFileName) {
