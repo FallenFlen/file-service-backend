@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.controller;
 
 import com.flz.downloadandupload.dto.request.ChunkRequestDTO;
+import com.flz.downloadandupload.dto.response.ResourceCreationResponseDTO;
 import com.flz.downloadandupload.service.AdvanceFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ public class AdvanceFileController {
     private final AdvanceFileService advanceFileService;
 
     @PostMapping("/chunk")
-    public void uploadChunk(ChunkRequestDTO requestDTO) {
-
+    public ResourceCreationResponseDTO uploadChunk(ChunkRequestDTO requestDTO) {
+        return advanceFileService.uploadChunk(requestDTO);
     }
 }
