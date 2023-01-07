@@ -16,20 +16,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResult handleNotFoundException(NotFoundException e) {
+        log.error("not found exception:", e);
         return ErrorResult.of(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResult handleBusinessException(BusinessException e) {
-        log.error(e.toString());
+        log.error("business exception:", e);
         return ErrorResult.of(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResult handleOtherException(Exception e) {
-        log.error(e.toString());
+        log.error("exception:", e);
         return ErrorResult.of(e.getMessage());
     }
 }
