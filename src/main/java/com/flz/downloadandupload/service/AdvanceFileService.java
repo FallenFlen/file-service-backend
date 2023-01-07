@@ -41,7 +41,7 @@ public class AdvanceFileService {
         //      3.将分块信息存入db
         FileChunkCreateCommand command = FileChunkCreateCommand.builder()
                 .number(chunkUploadRequestDTO.getNumber())
-                .fileName(chunkUploadRequestDTO.getFileName())
+                .fullFileName(chunkUploadRequestDTO.getFullFileName())
                 .fullFileMd5(chunkUploadRequestDTO.getFullFileMd5())
                 .totalChunkCount(chunkUploadRequestDTO.getTotalChunkCount())
                 .currentSize(chunkUploadRequestDTO.getCurrentSize())

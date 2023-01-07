@@ -16,8 +16,8 @@ public class FileChunkDO {
     private Long standardSize;
     private Long currentSize;
     private String path;
-    private String content;
+    private String fileUploadRecordId;
     private Long totalChunkCount;
-    private String fileName;
+    private String fullFileName;
     private String fullFileMd5;
 }

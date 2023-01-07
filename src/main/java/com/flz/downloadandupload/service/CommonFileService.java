@@ -32,7 +32,6 @@ public class CommonFileService {
                 .md5(DigestUtils.md5DigestAsHex(file.getInputStream()))
                 .build();
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(command);
-        fileUploadRecord.upload(true);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
         return new FileUploadResponseDTO(fileUploadRecord.getPath());
     }

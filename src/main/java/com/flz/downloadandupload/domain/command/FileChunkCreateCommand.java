@@ -16,8 +16,7 @@ public class FileChunkCreateCommand {
     private Long standardSize;
     private Long currentSize;
     private String path;
-    private String content;
     private Long totalChunkCount;
-    private String fileName;
+    private String fullFileName;
     private String fullFileMd5;
 }

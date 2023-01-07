@@ -18,6 +18,6 @@ public class ChunkUploadRequestDTO {
     private Long standardSize;
     private Long currentSize;
     private Long totalChunkCount;
-    private String fileName;
+    private String fullFileName;
     private String fullFileMd5;
 }
