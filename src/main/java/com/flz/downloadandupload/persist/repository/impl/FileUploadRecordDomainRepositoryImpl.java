@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.persist.repository.impl;
 
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
+import com.flz.downloadandupload.domain.enums.FileUploadRecordStatus;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
 import com.flz.downloadandupload.exception.NotFoundException;
 import com.flz.downloadandupload.persist.converter.FileUploadRecordDOConverter;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -31,5 +33,11 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
         return jdbcRepository.findFirstByPathAndDeletedIsFalse(path)
                 .map(converter::toDomain)
                 .orElseThrow(() -> new NotFoundException("file not found with path:" + path));
+    }
+
+    @Override
+    public Optional<FileUploadRecord> findByMd5AndStatus(String md5, FileUploadRecordStatus status) {
+        return jdbcRepository.findByMd5AndStatusAndDeletedIsFalse(md5, status)
+                .map(converter::toDomain);
     }
 }

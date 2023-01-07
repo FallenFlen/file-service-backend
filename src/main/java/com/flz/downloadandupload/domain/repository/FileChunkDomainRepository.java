@@ -6,4 +6,7 @@ import java.util.List;
 
 public interface FileChunkDomainRepository {
     void saveAll(List<FileChunk> fileChunks);
+
+    FileChunk findById(String id);
+
 }

@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResourceCreationResponseDTO {
-    private String id;
+public class ChunkUploadResponseDTO {
+    private String fileId;
+    private String fileChunkId;
 }

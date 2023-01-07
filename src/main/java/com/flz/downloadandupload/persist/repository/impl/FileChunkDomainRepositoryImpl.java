@@ -2,6 +2,7 @@ package com.flz.downloadandupload.persist.repository.impl;
 
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import com.flz.downloadandupload.domain.repository.FileChunkDomainRepository;
+import com.flz.downloadandupload.exception.NotFoundException;
 import com.flz.downloadandupload.persist.converter.FileChunkDoConverter;
 import com.flz.downloadandupload.persist.dataobject.FileChunkDO;
 import com.flz.downloadandupload.persist.repository.jdbc.FileChunkJDBCRepository;
@@ -23,5 +24,12 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
                 .map(converter::toDO)
                 .collect(Collectors.toList());
         fileChunkJDBCRepository.saveAll(fileChunkDOS);
+    }
+
+    @Override
+    public FileChunk findById(String id) {
+        return fileChunkJDBCRepository.findById(id)
+                .map(converter::toDomain)
+                .orElseThrow(() -> new NotFoundException("file chunk not found with id " + id));
     }
 }
