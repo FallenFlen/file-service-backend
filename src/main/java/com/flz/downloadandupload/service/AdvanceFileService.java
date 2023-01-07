@@ -4,7 +4,6 @@ import com.flz.downloadandupload.common.utils.FileUtils;
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
-import com.flz.downloadandupload.domain.enums.FileUploadRecordStatus;
 import com.flz.downloadandupload.domain.repository.FileChunkDomainRepository;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
@@ -30,7 +29,7 @@ public class AdvanceFileService {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
 //      1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
         Optional<FileUploadRecord> fileUploadRecordOptional = fileUploadRecordDomainRepository
-                .findByMd5AndStatus(chunkUploadRequestDTO.getFullFileMd5(), FileUploadRecordStatus.COMPLETED);
+                .findByMd5(chunkUploadRequestDTO.getFullFileMd5());
         if (fileUploadRecordOptional.isPresent()) {
             return new ChunkUploadResponseDTO(fileUploadRecordOptional
                     .map(FileUploadRecord::getId)

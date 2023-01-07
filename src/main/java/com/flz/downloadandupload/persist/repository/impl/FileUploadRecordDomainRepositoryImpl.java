@@ -1,7 +1,6 @@
 package com.flz.downloadandupload.persist.repository.impl;
 
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
-import com.flz.downloadandupload.domain.enums.FileUploadRecordStatus;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
 import com.flz.downloadandupload.exception.NotFoundException;
 import com.flz.downloadandupload.persist.converter.FileUploadRecordDOConverter;
@@ -36,8 +35,8 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
     }
 
     @Override
-    public Optional<FileUploadRecord> findByMd5AndStatus(String md5, FileUploadRecordStatus status) {
-        return jdbcRepository.findByMd5AndStatusAndDeletedIsFalse(md5, status)
+    public Optional<FileUploadRecord> findByMd5(String md5) {
+        return jdbcRepository.findByMd5AndDeletedIsFalse(md5)
                 .map(converter::toDomain);
     }
 }

@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.persist.dataobject;
 
+import com.flz.downloadandupload.persist.dataobject.base.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Getter
 @Setter
 @Table("file_chunk")
-public class FileChunkDO {
+public class FileChunkDO extends BaseDO {
     private Integer number;
     private Long standardSize;
     private Long currentSize;
