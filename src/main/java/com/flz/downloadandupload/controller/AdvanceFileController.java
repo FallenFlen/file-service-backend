@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.controller;
 
 import com.flz.downloadandupload.dto.request.ChunkRequestDTO;
+import com.flz.downloadandupload.service.AdvanceFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,9 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/files/advance")
 public class AdvanceFileController {
+    private final AdvanceFileService advanceFileService;
 
     @PostMapping("/chunk")
-    public void upload(ChunkRequestDTO requestDTO) {
+    public void uploadChunk(ChunkRequestDTO requestDTO) {
 
     }
 }
