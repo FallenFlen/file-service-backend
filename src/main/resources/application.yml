@@ -8,19 +8,14 @@ spring:
     password: flms04
   jackson:
     default-property-inclusion: non_null
-
   servlet:
     multipart:
       max-file-size: 1GB
 
 file:
   common:
-    download:
-      base-path: "D:/software/dev/test/download/common"
     upload:
       base-path: "D:/software/dev/test/upload/common"
   advance:
-    download:
-      base-path: "D:/software/dev/test/download/advance"
     upload:
       base-path: "D:/software/dev/test/upload/advance"

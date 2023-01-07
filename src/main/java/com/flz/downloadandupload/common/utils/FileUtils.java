@@ -19,16 +19,10 @@ import java.util.UUID;
 public class FileUtils implements InitializingBean {
     @Value("${file.common.upload.base-path}")
     private String commonUploadBasePathStr;
-    @Value("${file.common.download.base-path}")
-    private String commonDownloadBasePathStr;
     @Value("${file.common.upload.base-path}")
     private String advanceUploadBasePathStr;
-    @Value("${file.common.download.base-path}")
-    private String advanceDownloadBasePathStr;
     private Path commonUploadBasePath;
-    private Path commonDownloadBase;
     private Path advanceUploadBasePath;
-    private Path advanceDownloadBasePath;
 
     private static final String FILE_SEPARATOR = File.separator;
     private static final String DOT = ".";
@@ -80,24 +74,14 @@ public class FileUtils implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         this.commonUploadBasePath = Path.of(commonUploadBasePathStr.replace("/", FILE_SEPARATOR));
-        this.commonDownloadBase = Path.of(commonDownloadBasePathStr.replace("/", FILE_SEPARATOR));
         this.advanceUploadBasePath = Path.of(advanceUploadBasePathStr.replace("/", FILE_SEPARATOR));
-        this.advanceDownloadBasePath = Path.of(advanceDownloadBasePathStr.replace("/", FILE_SEPARATOR));
 
         if (!Files.exists(commonUploadBasePath)) {
             Files.createDirectory(commonUploadBasePath);
         }
 
-        if (!Files.exists(commonDownloadBase)) {
-            Files.createDirectory(commonDownloadBase);
-        }
-
         if (!Files.exists(advanceUploadBasePath)) {
             Files.createDirectory(advanceUploadBasePath);
-        }
-
-        if (!Files.exists(advanceDownloadBasePath)) {
-            Files.createDirectory(advanceDownloadBasePath);
         }
     }
 }
