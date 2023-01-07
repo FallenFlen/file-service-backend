@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -17,7 +19,7 @@ public class AdvanceFileController {
     private final AdvanceFileService advanceFileService;
 
     @PostMapping("/chunk")
-    public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO requestDTO) {
+    public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO requestDTO) throws IOException {
         return advanceFileService.uploadChunk(requestDTO);
     }
 }
