@@ -10,4 +10,6 @@ public interface FileChunkDomainRepository {
     FileChunk findById(String id);
 
     List<FileChunk> findAllByFullFileMd5AndMerged(String md5, Boolean merged);
+
+    Integer deleteByFullFileMd5AndMerged(String md5, Boolean merged);
 }

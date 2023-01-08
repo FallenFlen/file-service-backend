@@ -15,6 +15,7 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdvanceFileService {
@@ -70,11 +72,8 @@ public class AdvanceFileService {
                     requestDTO.getTotalChunkCount() + ",but existed chunk count is " + allChunks.size());
         }
 
-        List<FileChunk> sortedAndMergedChunks = allChunks.stream()
+        List<byte[]> byteArrays = allChunks.stream()
                 .sorted(Comparator.comparing(FileChunk::getNumber))
-                .peek(FileChunk::merge)
-                .collect(Collectors.toList());
-        List<byte[]> byteArrays = sortedAndMergedChunks.stream()
                 .map(FileChunk::getPath)
                 .map(fileUtils::getContent)
                 .collect(Collectors.toList());
@@ -89,7 +88,9 @@ public class AdvanceFileService {
                 .build();
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
-        fileChunkDomainRepository.saveAll(sortedAndMergedChunks);
+
+        Integer deleteCount = fileChunkDomainRepository.deleteByFullFileMd5AndMerged(requestDTO.getFullFileMd5(), true);
+        log.info("{} chunks of file with md5 {} deleted", deleteCount, requestDTO.getFullFileMd5());
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 }

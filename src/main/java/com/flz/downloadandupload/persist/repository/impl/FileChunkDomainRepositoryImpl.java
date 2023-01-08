@@ -39,4 +39,9 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
                 .map(converter::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Integer deleteByFullFileMd5AndMerged(String md5, Boolean merged) {
+        return fileChunkJDBCRepository.deleteByFullFileMd5AndMerged(md5, merged);
+    }
 }

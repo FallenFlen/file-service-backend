@@ -11,7 +11,7 @@ public class ByteUtils {
         byte[] result = new byte[length];
         AtomicInteger currentPos = new AtomicInteger(0);
         byteArrays.forEach((bytes) -> {
-            System.arraycopy(bytes, bytes.length, result, currentPos.get(), length);
+            System.arraycopy(bytes, 0, result, currentPos.get(), bytes.length);
             currentPos.addAndGet(bytes.length);
         });
         return result;

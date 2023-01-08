@@ -29,9 +29,8 @@ public class FileUtils implements InitializingBean {
     private static final String FILE_NAME_SEPARATOR = "-";
 
     public byte[] getContent(String path) {
-        Path filePath = Path.of(commonUploadBasePathStr.concat(FILE_SEPARATOR).concat(path));
         try {
-            return Files.readAllBytes(filePath);
+            return Files.readAllBytes(Path.of(path));
         } catch (IOException e) {
             log.error("common download file failed:{}", e);
             throw new RuntimeException("file download failed:" + e.getMessage());
