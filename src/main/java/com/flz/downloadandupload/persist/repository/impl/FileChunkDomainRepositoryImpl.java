@@ -34,14 +34,14 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
     }
 
     @Override
-    public List<FileChunk> findAllByFullFileMd5AndMerged(String md5, Boolean merged) {
-        return fileChunkJDBCRepository.findAllByFullFileMd5AndMergedAndDeletedIsFalse(md5, merged).stream()
+    public List<FileChunk> findAllByFullFileMd5AndMerged(String md5) {
+        return fileChunkJDBCRepository.findAllByFullFileMd5AndDeletedIsFalse(md5).stream()
                 .map(converter::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Integer deleteByFullFileMd5AndMerged(String md5, Boolean merged) {
-        return fileChunkJDBCRepository.deleteByFullFileMd5AndMerged(md5, merged);
+    public Integer deleteByFullFileMd5AndMerged(String md5) {
+        return fileChunkJDBCRepository.deleteByFullFileMd5(md5);
     }
 }

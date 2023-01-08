@@ -66,7 +66,7 @@ public class AdvanceFileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) throws IOException {
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(requestDTO.getFullFileMd5(), false);
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
         if (allChunks.size() != requestDTO.getTotalChunkCount().longValue()) {
             throw new BusinessException("file merge failed,required chunk count is " +
                     requestDTO.getTotalChunkCount() + ",but existed chunk count is " + allChunks.size());
@@ -89,7 +89,7 @@ public class AdvanceFileService {
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
 
-        Integer deleteCount = fileChunkDomainRepository.deleteByFullFileMd5AndMerged(requestDTO.getFullFileMd5(), true);
+        Integer deleteCount = fileChunkDomainRepository.deleteByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
         log.info("{} chunks of file with md5 {} deleted", deleteCount, requestDTO.getFullFileMd5());
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }

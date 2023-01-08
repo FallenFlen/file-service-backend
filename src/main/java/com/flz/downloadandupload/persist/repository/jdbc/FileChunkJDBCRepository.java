@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface FileChunkJDBCRepository extends CrudRepository<FileChunkDO, String> {
     Optional<FileChunkDO> findByIdAndDeletedIsFalse(String id);
 
-    List<FileChunkDO> findAllByFullFileMd5AndMergedAndDeletedIsFalse(String md5, Boolean merged);
+    List<FileChunkDO> findAllByFullFileMd5AndDeletedIsFalse(String md5);
 
-    Integer deleteByFullFileMd5AndMerged(String md5, Boolean merged);
+    Integer deleteByFullFileMd5(String md5);
 }

@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -23,6 +21,4 @@ public class FileChunkDO extends BaseDO {
     private Long totalChunkCount;
     private String fullFileName;
     private String fullFileMd5;
-    private Boolean merged;
-    private LocalDateTime mergeTime;
 }

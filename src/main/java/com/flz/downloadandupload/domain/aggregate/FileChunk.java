@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter(AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -25,8 +23,6 @@ public class FileChunk extends AuditAggregateRoot {
     private Long totalChunkCount;
     private String fullFileName;
     private String fullFileMd5;
-    private Boolean merged;
-    private LocalDateTime mergeTime;
 
     public static FileChunk create(FileChunkCreateCommand command) {
         return FileChunk.builder()
@@ -37,7 +33,6 @@ public class FileChunk extends AuditAggregateRoot {
                 .totalChunkCount(command.getTotalChunkCount())
                 .fullFileName(command.getFullFileName())
                 .fullFileMd5(command.getFullFileMd5())
-                .merged(Boolean.FALSE)
                 .build();
     }
 }
