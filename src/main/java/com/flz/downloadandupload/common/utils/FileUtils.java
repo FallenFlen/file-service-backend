@@ -30,6 +30,10 @@ public class FileUtils implements InitializingBean {
     private static final String DOT = ".";
     private static final String FILE_NAME_SEPARATOR = "-";
 
+    public boolean exists(String path) {
+        return Files.exists(Path.of(path));
+    }
+
     public byte[] getContent(String path) {
         try {
             return Files.readAllBytes(Path.of(path));

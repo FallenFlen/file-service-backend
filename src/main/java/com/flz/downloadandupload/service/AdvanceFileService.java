@@ -65,12 +65,19 @@ public class AdvanceFileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) {
+        String fullFilePath = fileUploadRecordDomainRepository.findByMd5(requestDTO.getFullFileMd5())
+                .map(FileUploadRecord::getPath)
+                .orElse(null);
+        if (fullFilePath != null && fileUtils.exists(fullFilePath)) {
+            return new ChunkMergeResponseDTO(fullFilePath);
+        }
+
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
         if (allChunks.size() != requestDTO.getTotalChunkCount().longValue()) {
             throw new BusinessException("file merge failed,required chunk count is " +
                     requestDTO.getTotalChunkCount() + ",but existed chunk count is " + allChunks.size());
         }
-
+        // todo 注册回滚逻辑：删除chunk文件
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
         allChunks.stream()
