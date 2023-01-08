@@ -11,5 +11,5 @@ public interface FileChunkJDBCRepository extends CrudRepository<FileChunkDO, Str
 
     List<FileChunkDO> findAllByFullFileMd5AndDeletedIsFalse(String md5);
 
-    Integer deleteByFullFileMd5(String md5);
+    List<Integer> deleteByFullFileMd5(String md5);
 }
