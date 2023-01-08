@@ -40,7 +40,7 @@ public class FileUtils implements InitializingBean {
 
     public FileValueObject commonUploadToDisk(String originalFileName, InputStream inputStream) {
         try {
-            String prefix = getPrefix(originalFileName);
+            String suffix = getSuffix(originalFileName);
             String pureFileName = getPureFileName(originalFileName);
             String mixedFileName = String.join(FILE_NAME_SEPARATOR,
                     pureFileName,
@@ -48,20 +48,20 @@ public class FileUtils implements InitializingBean {
                     UUID.randomUUID().toString());
             String finalFilePathStr = mixedFileName
                     .concat(DOT)
-                    .concat(prefix);
+                    .concat(suffix);
             Path filePath = Path.of(commonUploadBasePath.toString()
                     .concat(FILE_SEPARATOR)
                     .concat(finalFilePathStr));
             Files.createFile(filePath);
             Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-            return new FileValueObject(mixedFileName, finalFilePathStr);
+            return new FileValueObject(mixedFileName, filePath.toString());
         } catch (IOException e) {
             log.error("upload file failed:{}", e);
             throw new RuntimeException(e);
         }
     }
 
-    private String getPrefix(String originalFileName) {
+    private String getSuffix(String originalFileName) {
         int index = originalFileName.lastIndexOf(".");
         return index == -1 ? "" : originalFileName.substring(index + 1);
     }
