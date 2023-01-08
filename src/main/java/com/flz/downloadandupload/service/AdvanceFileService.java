@@ -6,6 +6,7 @@ import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
 import com.flz.downloadandupload.domain.repository.FileChunkDomainRepository;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
+import com.flz.downloadandupload.domain.valueobject.FileValueObject;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +33,11 @@ public class AdvanceFileService {
                 .findByMd5(chunkUploadRequestDTO.getFullFileMd5());
         if (fileUploadRecordOptional.isPresent()) {
             return new ChunkUploadResponseDTO(fileUploadRecordOptional
-                    .map(FileUploadRecord::getId)
-                    .get(), null);
+                    .map(FileUploadRecord::getMd5)
+                    .get(), null, true, true);
         }
         // 2.分块文件上传到disk
+        FileValueObject fileValueObject = fileUtils.commonUploadToDisk(chunkUploadRequestDTO.getFullFileName().concat("-chunk"), chunk.getInputStream());
 
         //      3.将分块信息存入db
         FileChunkCreateCommand command = FileChunkCreateCommand.builder()
@@ -45,9 +47,16 @@ public class AdvanceFileService {
                 .totalChunkCount(chunkUploadRequestDTO.getTotalChunkCount())
                 .currentSize(chunkUploadRequestDTO.getCurrentSize())
                 .standardSize(chunkUploadRequestDTO.getStandardSize())
+                .path(fileValueObject.getPath())
                 .build();
         FileChunk fileChunk = FileChunk.create(command);
         fileChunkDomainRepository.saveAll(List.of(fileChunk));
+
+        // 4.文件合并
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(chunkUploadRequestDTO.getFullFileMd5(), false);
+        if (allChunks.size() != chunkUploadRequestDTO.getTotalChunkCount().longValue()) {
+            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(), chunkUploadRequestDTO.getNumber(), false, false);
+        }
 
 
         return null;

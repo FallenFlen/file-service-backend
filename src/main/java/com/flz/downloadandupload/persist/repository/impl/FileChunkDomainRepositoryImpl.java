@@ -32,4 +32,11 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
                 .map(converter::toDomain)
                 .orElseThrow(() -> new NotFoundException("file chunk not found with id " + id));
     }
+
+    @Override
+    public List<FileChunk> findAllByFullFileMd5AndMerged(String md5, Boolean merged) {
+        return fileChunkJDBCRepository.findAllByFullFileMd5AndMergedAndDeletedIsFalse(md5, merged).stream()
+                .map(converter::toDomain)
+                .collect(Collectors.toList());
+    }
 }
