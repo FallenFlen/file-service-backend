@@ -19,4 +19,6 @@ public class ChunkMergeRequestDTO {
     private String fullFileName;
     @NotNull
     private Long totalChunkCount;
+    @NotNull
+    private Long fullFileSize;
 }

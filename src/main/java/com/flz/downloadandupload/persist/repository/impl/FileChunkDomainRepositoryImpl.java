@@ -42,6 +42,6 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
 
     @Override
     public void deleteByFullFileMd5AndMerged(String md5) {
-        fileChunkJDBCRepository.deleteByFullFileMd5(md5);
+        fileChunkJDBCRepository.deleteAllByFullFileMd5(md5);
     }
 }

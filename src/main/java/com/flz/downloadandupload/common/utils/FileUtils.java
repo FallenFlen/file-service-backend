@@ -10,8 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -37,7 +39,16 @@ public class FileUtils implements InitializingBean {
         }
     }
 
-    public FileValueObject uploadToDisk(String originalFileName, InputStream inputStream) {
+    public void append(String path, InputStream inputStream) {
+        try {
+            Files.write(Path.of(path), inputStream.readAllBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            log.error("append file failed:{}", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public FileValueObject uploadToDisk(String originalFileName, InputStream inputStream, OpenOption option) {
         try {
             String suffix = getSuffix(originalFileName);
             String pureFileName = getPureFileName(originalFileName);
@@ -50,8 +61,10 @@ public class FileUtils implements InitializingBean {
             Path filePath = Path.of(commonUploadBasePath.toString()
                     .concat(FILE_SEPARATOR)
                     .concat(mixedFileName));
-            Files.createFile(filePath);
-            Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+            if (!Set.of(StandardOpenOption.CREATE, StandardOpenOption.CREATE_NEW).contains(option) && !Files.exists(filePath)) {
+                Files.createFile(filePath);
+            }
+            Files.write(filePath, inputStream.readAllBytes(), option);
             return new FileValueObject(mixedFileName, filePath.toString());
         } catch (IOException e) {
             log.error("upload file failed:{}", e);

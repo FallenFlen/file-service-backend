@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 @Service
@@ -24,7 +25,7 @@ public class CommonFileService {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
 
     public FileUploadResponseDTO upload(MultipartFile file) throws IOException {
-        FileValueObject uploadResult = fileUtils.uploadToDisk(file.getOriginalFilename(), file.getInputStream());
+        FileValueObject uploadResult = fileUtils.uploadToDisk(file.getOriginalFilename(), file.getInputStream(), StandardOpenOption.TRUNCATE_EXISTING);
         FileUploadRecordCreateCommand command = FileUploadRecordCreateCommand.builder()
                 .name(uploadResult.getName())
                 .path(uploadResult.getPath())
