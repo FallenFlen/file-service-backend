@@ -44,7 +44,7 @@ public class AdvanceFileService {
         }
 
         // 2.分块文件上传到disk,将分块信息存入db
-        FileValueObject chunkFile = fileUtils.commonUploadToDisk(chunkUploadRequestDTO.getFullFileName().concat("-chunk"), chunk.getInputStream());
+        FileValueObject chunkFile = fileUtils.uploadToDisk(chunkUploadRequestDTO.getFullFileName().concat("-chunk"), chunk.getInputStream());
         FileChunkCreateCommand command = FileChunkCreateCommand.builder()
                 .number(chunkUploadRequestDTO.getNumber())
                 .fullFileName(chunkUploadRequestDTO.getFullFileName())
@@ -68,11 +68,11 @@ public class AdvanceFileService {
                 .collect(Collectors.toList());
         List<byte[]> byteArrays = sortedAndMergedChunks.stream()
                 .map(FileChunk::getPath)
-                .map(fileUtils::commonDownload)
+                .map(fileUtils::getContent)
                 .collect(Collectors.toList());
         byte[] content = ByteUtils.merge(byteArrays);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
-        FileValueObject fullFile = fileUtils.commonUploadToDisk(chunkUploadRequestDTO.getFullFileName(), inputStream);
+        FileValueObject fullFile = fileUtils.uploadToDisk(chunkUploadRequestDTO.getFullFileName(), inputStream);
         FileUploadRecordCreateCommand fileUploadRecordCreateCommand = FileUploadRecordCreateCommand.builder()
                 .name(fullFile.getName())
                 .path(fullFile.getPath())

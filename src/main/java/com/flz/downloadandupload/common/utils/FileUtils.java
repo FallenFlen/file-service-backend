@@ -28,7 +28,7 @@ public class FileUtils implements InitializingBean {
     private static final String DOT = ".";
     private static final String FILE_NAME_SEPARATOR = "-";
 
-    public byte[] commonDownload(String path) {
+    public byte[] getContent(String path) {
         Path filePath = Path.of(commonUploadBasePathStr.concat(FILE_SEPARATOR).concat(path));
         try {
             return Files.readAllBytes(filePath);
@@ -38,7 +38,7 @@ public class FileUtils implements InitializingBean {
         }
     }
 
-    public FileValueObject commonUploadToDisk(String originalFileName, InputStream inputStream) {
+    public FileValueObject uploadToDisk(String originalFileName, InputStream inputStream) {
         try {
             String suffix = getSuffix(originalFileName);
             String pureFileName = getPureFileName(originalFileName);

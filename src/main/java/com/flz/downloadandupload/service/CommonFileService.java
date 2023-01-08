@@ -24,7 +24,7 @@ public class CommonFileService {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
 
     public FileUploadResponseDTO upload(MultipartFile file) throws IOException {
-        FileValueObject uploadResult = fileUtils.commonUploadToDisk(file.getOriginalFilename(), file.getInputStream());
+        FileValueObject uploadResult = fileUtils.uploadToDisk(file.getOriginalFilename(), file.getInputStream());
         FileUploadRecordCreateCommand command = FileUploadRecordCreateCommand.builder()
                 .name(uploadResult.getName())
                 .path(uploadResult.getPath())
@@ -38,7 +38,7 @@ public class CommonFileService {
 
     public void download(String path, HttpServletResponse response) {
         FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository.findByPath(path);
-        byte[] content = fileUtils.commonDownload(fileUploadRecord.getPath());
+        byte[] content = fileUtils.getContent(fileUploadRecord.getPath());
         ResponseUtils.responseFile(response, fileUploadRecord.getPath(), content);
     }
 }
