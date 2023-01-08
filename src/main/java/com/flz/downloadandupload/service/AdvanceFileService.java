@@ -9,8 +9,11 @@ import com.flz.downloadandupload.domain.command.FileUploadRecordCreateCommand;
 import com.flz.downloadandupload.domain.repository.FileChunkDomainRepository;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
 import com.flz.downloadandupload.domain.valueobject.FileValueObject;
+import com.flz.downloadandupload.dto.request.ChunkMergeRequestDTO;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
+import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
+import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,16 +34,15 @@ public class AdvanceFileService {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
 
-    @Transactional
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
-//      1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
+        // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
         Optional<FileUploadRecord> fileUploadRecordOptional = fileUploadRecordDomainRepository
                 .findByMd5(chunkUploadRequestDTO.getFullFileMd5());
         if (fileUploadRecordOptional.isPresent()) {
             return new ChunkUploadResponseDTO(fileUploadRecordOptional
                     .map(FileUploadRecord::getMd5)
-                    .get(), null, true, true);
+                    .get(), null, true);
         }
 
         // 2.分块文件上传到disk,将分块信息存入db
@@ -57,11 +59,16 @@ public class AdvanceFileService {
         FileChunk fileChunk = FileChunk.create(command);
         fileChunkDomainRepository.saveAll(List.of(fileChunk));
 
-        // 3.文件合并
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(chunkUploadRequestDTO.getFullFileMd5(), false);
-        if (allChunks.size() != chunkUploadRequestDTO.getTotalChunkCount().longValue()) {
-            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(), chunkUploadRequestDTO.getNumber(), false, false);
+        return new ChunkUploadResponseDTO(fileChunk.getFullFileMd5(), fileChunk.getNumber(), false);
+    }
+
+    @Transactional
+    public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) throws IOException {
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(requestDTO.getFullFileMd5(), false);
+        if (allChunks.size() != requestDTO.getTotalChunkCount().longValue()) {
+            throw new BusinessException("file merge failed because chunk is not enough");
         }
+
         List<FileChunk> sortedAndMergedChunks = allChunks.stream()
                 .sorted(Comparator.comparing(FileChunk::getNumber))
                 .peek(FileChunk::merge)
@@ -72,7 +79,7 @@ public class AdvanceFileService {
                 .collect(Collectors.toList());
         byte[] content = ByteUtils.merge(byteArrays);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
-        FileValueObject fullFile = fileUtils.uploadToDisk(chunkUploadRequestDTO.getFullFileName(), inputStream);
+        FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(), inputStream);
         FileUploadRecordCreateCommand fileUploadRecordCreateCommand = FileUploadRecordCreateCommand.builder()
                 .name(fullFile.getName())
                 .path(fullFile.getPath())
@@ -82,6 +89,6 @@ public class AdvanceFileService {
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
         fileChunkDomainRepository.saveAll(sortedAndMergedChunks);
-        return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(), chunkUploadRequestDTO.getNumber(), false, true);
+        return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 }

@@ -9,8 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChunkUploadResponseDTO {
-    private String fullFileMd5;
-    private Integer fileChunkNumber;
-    private Boolean fullFileAlreadyUploaded;
+public class ChunkMergeResponseDTO {
+    private String fullFilePath;
 }
