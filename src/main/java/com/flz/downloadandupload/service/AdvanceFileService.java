@@ -50,7 +50,7 @@ public class AdvanceFileService {
                 .fullFileName(chunkUploadRequestDTO.getFullFileName())
                 .fullFileMd5(chunkUploadRequestDTO.getFullFileMd5())
                 .totalChunkCount(chunkUploadRequestDTO.getTotalChunkCount())
-                .currentSize(chunkUploadRequestDTO.getCurrentSize())
+                .currentSize(chunk.getSize())
                 .standardSize(chunkUploadRequestDTO.getStandardSize())
                 .path(chunkFile.getPath())
                 .build();
