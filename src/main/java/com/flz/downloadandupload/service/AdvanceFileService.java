@@ -66,7 +66,8 @@ public class AdvanceFileService {
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) throws IOException {
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(requestDTO.getFullFileMd5(), false);
         if (allChunks.size() != requestDTO.getTotalChunkCount().longValue()) {
-            throw new BusinessException("file merge failed because chunk is not enough");
+            throw new BusinessException("file merge failed,required chunk count is " +
+                    requestDTO.getTotalChunkCount() + ",but existed chunk count is " + allChunks.size());
         }
 
         List<FileChunk> sortedAndMergedChunks = allChunks.stream()
