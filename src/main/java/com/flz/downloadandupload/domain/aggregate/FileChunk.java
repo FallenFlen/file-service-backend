@@ -37,6 +37,7 @@ public class FileChunk extends AuditAggregateRoot {
                 .totalChunkCount(command.getTotalChunkCount())
                 .fullFileName(command.getFullFileName())
                 .fullFileMd5(command.getFullFileMd5())
+                .merged(Boolean.FALSE)
                 .build();
     }
 
