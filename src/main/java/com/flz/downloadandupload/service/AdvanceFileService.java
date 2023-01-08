@@ -25,6 +25,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -80,10 +81,17 @@ public class AdvanceFileService {
         // todo 注册回滚逻辑：删除chunk文件
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
-        allChunks.stream()
+        List<String> chunkPaths = allChunks.stream()
                 .sorted(Comparator.comparing(FileChunk::getNumber))
                 .map(FileChunk::getPath)
+                .collect(Collectors.toList());
+        if (chunkPaths.stream()
+                .anyMatch((path) -> !fileUtils.exists(path))) {
+            throw new BusinessException("file chunks damaged");
+        }
+        chunkPaths.stream()
                 .map(fileUtils::getContent)
+                .collect(Collectors.toList())
                 .forEach((content) -> fileUtils.append(fullFile.getPath(), new ByteArrayInputStream(content)));
         FileUploadRecordCreateCommand fileUploadRecordCreateCommand = FileUploadRecordCreateCommand.builder()
                 .name(fullFile.getName())
