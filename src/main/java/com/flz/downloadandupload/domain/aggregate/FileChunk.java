@@ -41,7 +41,7 @@ public class FileChunk extends AuditAggregateRoot {
     }
 
     public void merge() {
-        this.merged = merged;
+        this.merged = Boolean.TRUE;
         this.mergeTime = LocalDateTime.now();
     }
 }
