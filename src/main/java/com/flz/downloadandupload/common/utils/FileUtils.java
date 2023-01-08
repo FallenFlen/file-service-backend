@@ -43,15 +43,14 @@ public class FileUtils implements InitializingBean {
             String suffix = getSuffix(originalFileName);
             String pureFileName = getPureFileName(originalFileName);
             String mixedFileName = String.join(FILE_NAME_SEPARATOR,
-                    pureFileName,
-                    String.valueOf(System.currentTimeMillis()),
-                    UUID.randomUUID().toString());
-            String finalFilePathStr = mixedFileName
+                            pureFileName,
+                            String.valueOf(System.currentTimeMillis()),
+                            UUID.randomUUID().toString())
                     .concat(DOT)
                     .concat(suffix);
             Path filePath = Path.of(commonUploadBasePath.toString()
                     .concat(FILE_SEPARATOR)
-                    .concat(finalFilePathStr));
+                    .concat(mixedFileName));
             Files.createFile(filePath);
             Files.write(filePath, inputStream.readAllBytes(), StandardOpenOption.TRUNCATE_EXISTING);
             return new FileValueObject(mixedFileName, filePath.toString());
