@@ -36,7 +36,7 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
 
     @Override
     public Optional<FileUploadRecord> findByMd5(String md5) {
-        return jdbcRepository.findByMd5AndDeletedIsFalse(md5)
+        return jdbcRepository.findFirstByMd5AndDeletedIsFalse(md5)
                 .map(converter::toDomain);
     }
 }

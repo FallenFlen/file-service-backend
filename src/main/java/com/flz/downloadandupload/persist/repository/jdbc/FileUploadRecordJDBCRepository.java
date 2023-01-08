@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface FileUploadRecordJDBCRepository extends CrudRepository<FileUploadRecordDO, String> {
     Optional<FileUploadRecordDO> findFirstByPathAndDeletedIsFalse(String path);
 
-    Optional<FileUploadRecordDO> findByMd5AndDeletedIsFalse(String md5);
+    Optional<FileUploadRecordDO> findFirstByMd5AndDeletedIsFalse(String md5);
 }
