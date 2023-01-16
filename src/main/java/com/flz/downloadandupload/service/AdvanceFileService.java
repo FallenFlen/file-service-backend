@@ -13,11 +13,14 @@ import com.flz.downloadandupload.dto.request.ChunkMergeRequestDTO;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
+import com.flz.downloadandupload.event.FileChunkDamageEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -36,6 +39,7 @@ public class AdvanceFileService {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
     private final TransactionUtils transactionUtils;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
@@ -75,7 +79,7 @@ public class AdvanceFileService {
             return new ChunkMergeResponseDTO(fullFilePath);
         }
 
-        List<String> chunkPaths = validateChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
+        List<String> chunkPaths = validateAndGetChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
 
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
@@ -97,23 +101,24 @@ public class AdvanceFileService {
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 
-    private List<String> validateChunks(String fullFileMd5, long totalChunkCount) {
+    private List<String> validateAndGetChunks(String fullFileMd5, long totalChunkCount) {
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(fullFileMd5);
         if (allChunks.size() != totalChunkCount) {
             throw new BusinessException("file merge failed,required chunk count is " +
                     totalChunkCount + ",but existed chunk count is " + allChunks.size());
         }
 
-        List<String> chunkPaths = allChunks.stream()
-                .sorted(Comparator.comparing(FileChunk::getNumber))
-                .map(FileChunk::getPath)
+        List<FileChunk> damagedChunks = allChunks.stream()
+                .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
                 .collect(Collectors.toList());
-        if (chunkPaths.stream()
-                .anyMatch((path) -> !fileUtils.exists(path))) {
-            //todo 校验MD5，删除损坏的chunk
+        if (!CollectionUtils.isEmpty(damagedChunks)) {
+            eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
             throw new BusinessException("file chunks damaged");
         }
 
-        return chunkPaths;
+        return allChunks.stream()
+                .sorted(Comparator.comparing(FileChunk::getNumber))
+                .map(FileChunk::getPath)
+                .collect(Collectors.toList());
     }
 }

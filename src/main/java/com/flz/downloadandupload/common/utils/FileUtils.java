@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.DigestUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,19 @@ public class FileUtils implements InitializingBean {
     private static final String FILE_SEPARATOR = File.separator;
     private static final String DOT = ".";
     private static final String FILE_NAME_SEPARATOR = "-";
+
+    public boolean validateMd5(String currentMd5, String path) {
+        return DigestUtils.md5DigestAsHex(getContent(path)).equals(currentMd5);
+    }
+
+    public void delete(String path) {
+        try {
+            Files.delete(Path.of(path));
+        } catch (IOException e) {
+            log.error("file delete failed:", e);
+            throw new RuntimeException("file delete failed:" + e.getMessage());
+        }
+    }
 
     public boolean exists(String path) {
         return Files.exists(Path.of(path));

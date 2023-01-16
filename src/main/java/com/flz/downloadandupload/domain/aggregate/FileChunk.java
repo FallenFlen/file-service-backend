@@ -19,6 +19,7 @@ public class FileChunk extends AuditAggregateRoot {
     private Long standardSize;
     private Long currentSize;
     private String path;
+    private String md5;
     private String fileUploadRecordId;
     private Long totalChunkCount;
     private String fullFileName;
@@ -33,6 +34,7 @@ public class FileChunk extends AuditAggregateRoot {
                 .totalChunkCount(command.getTotalChunkCount())
                 .fullFileName(command.getFullFileName())
                 .fullFileMd5(command.getFullFileMd5())
+                .md5(command.getMd5())
                 .build();
     }
 }
