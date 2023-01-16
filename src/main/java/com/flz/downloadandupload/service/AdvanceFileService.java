@@ -133,7 +133,7 @@ public class AdvanceFileService {
                 .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
                 .collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(damagedChunks)) {
-            eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
+            transactionUtils.runAfterRollback(() -> eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks)));
             throw new BusinessException("file chunks damaged");
         }
 
