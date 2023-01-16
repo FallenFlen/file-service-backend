@@ -24,6 +24,7 @@ public class FileChunkDamageEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     @Transactional
     public void listen(FileChunkDamageEvent event) {
+        log.info("damaged event listened");
         List<FileChunk> damagedChunks = event.getSource();
 
         // 删除损坏的chunk的表数据

@@ -46,12 +46,8 @@ public class AdvanceFileService {
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
-        FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository
-                .findByMd5(chunkUploadRequestDTO.getFullFileMd5());
-        if (fileUploadRecord != null
-                && fileUtils.exists(fileUploadRecord.getPath())
-                && fileUtils.validateMd5(fileUploadRecord.getMd5(), fileUploadRecord.getPath())) {
-            return new ChunkUploadResponseDTO(fileUploadRecord.getMd5(), null, true);
+        if (getFullFileActualPath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
+            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(), null, true);
         }
 
         // 2.分块文件上传到disk,将分块信息存入db
@@ -75,11 +71,9 @@ public class AdvanceFileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) {
-        String fullFilePath = Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(requestDTO.getFullFileMd5()))
-                .map(FileUploadRecord::getPath)
-                .orElse(null);
-        if (fullFilePath != null && fileUtils.exists(fullFilePath)) {
-            return new ChunkMergeResponseDTO(fullFilePath);
+        String fullFileActualPath = getFullFileActualPath(requestDTO.getFullFileMd5());
+        if (fullFileActualPath != null) {
+            return new ChunkMergeResponseDTO(fullFileActualPath);
         }
 
         List<String> chunkPaths = validateAndGetSortedChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
@@ -102,6 +96,14 @@ public class AdvanceFileService {
         fileChunkDomainRepository.deleteByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
 
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
+    }
+
+    private String getFullFileActualPath(String fullFileMd5) {
+        return Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
+                .filter((record) -> fileUtils.exists(record.getPath()))
+                .filter((record) -> fileUtils.validateMd5(record.getMd5(), record.getPath()))
+                .map(FileUploadRecord::getPath)
+                .orElse(null);
     }
 
     private List<String> validateAndGetSortedChunks(String fullFileMd5, long totalChunkCount) {
