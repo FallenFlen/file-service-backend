@@ -42,15 +42,16 @@ public class AdvanceFileService {
     private final TransactionUtils transactionUtils;
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
-        Optional<FileUploadRecord> fileUploadRecordOptional = fileUploadRecordDomainRepository
+        FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository
                 .findByMd5(chunkUploadRequestDTO.getFullFileMd5());
-        if (fileUploadRecordOptional.isPresent()) {
-            return new ChunkUploadResponseDTO(fileUploadRecordOptional
-                    .map(FileUploadRecord::getMd5)
-                    .get(), null, true);
+        if (fileUploadRecord != null
+                && fileUtils.exists(fileUploadRecord.getPath())
+                && fileUtils.validateMd5(fileUploadRecord.getMd5(), fileUploadRecord.getPath())) {
+            return new ChunkUploadResponseDTO(fileUploadRecord.getMd5(), null, true);
         }
 
         // 2.分块文件上传到disk,将分块信息存入db
@@ -74,7 +75,7 @@ public class AdvanceFileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) {
-        String fullFilePath = fileUploadRecordDomainRepository.findByMd5(requestDTO.getFullFileMd5())
+        String fullFilePath = Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(requestDTO.getFullFileMd5()))
                 .map(FileUploadRecord::getPath)
                 .orElse(null);
         if (fullFilePath != null && fileUtils.exists(fullFilePath)) {

@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -35,8 +34,9 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
     }
 
     @Override
-    public Optional<FileUploadRecord> findByMd5(String md5) {
+    public FileUploadRecord findByMd5(String md5) {
         return jdbcRepository.findFirstByMd5AndDeletedIsFalse(md5)
-                .map(converter::toDomain);
+                .map(converter::toDomain)
+                .orElse(null);
     }
 }
