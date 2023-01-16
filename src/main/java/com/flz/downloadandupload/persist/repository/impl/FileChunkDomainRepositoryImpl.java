@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -48,5 +49,11 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
     @Override
     public void deleteByIds(List<String> ids) {
         fileChunkJDBCRepository.deleteAllByIds(ids);
+    }
+
+    @Override
+    public Optional<FileChunk> findByMd5(String md5) {
+        return fileChunkJDBCRepository.findFirstByMd5AndDeletedIsFalse(md5)
+                .map(converter::toDomain);
     }
 }

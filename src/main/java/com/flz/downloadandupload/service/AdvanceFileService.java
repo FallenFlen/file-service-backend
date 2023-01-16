@@ -47,17 +47,29 @@ public class AdvanceFileService {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
         if (getFullFileActualPath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
-            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(), null, true);
+            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
+                    true, null, false);
         }
 
-        // 2.分块文件上传到disk,将分块信息存入db
+        // 2.chunk md5，检测chunk是否被上传过
+        String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
+        boolean isChunkActualExisted = fileChunkDomainRepository.findByMd5(md5)
+                .filter((fileChunk) -> fileUtils.exists(fileChunk.getPath()))
+                .filter((fileChunk) -> fileUtils.validateMd5(md5, fileChunk.getPath()))
+                .isPresent();
+        if (isChunkActualExisted) {
+            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
+                    false, md5, true);
+        }
+
+        // 3.分块文件上传到disk,将分块信息存入db
         FileValueObject chunkFile = fileUtils.uploadToDisk(chunkUploadRequestDTO.getFullFileName().concat("-chunk"),
                 chunk.getInputStream(), StandardOpenOption.TRUNCATE_EXISTING);
         FileChunkCreateCommand command = FileChunkCreateCommand.builder()
                 .number(chunkUploadRequestDTO.getNumber())
                 .fullFileName(chunkUploadRequestDTO.getFullFileName())
                 .fullFileMd5(chunkUploadRequestDTO.getFullFileMd5())
-                .md5(DigestUtils.md5DigestAsHex(chunk.getInputStream()))
+                .md5(md5)
                 .totalChunkCount(chunkUploadRequestDTO.getTotalChunkCount())
                 .currentSize(chunk.getSize())
                 .standardSize(chunkUploadRequestDTO.getStandardSize())
@@ -66,7 +78,7 @@ public class AdvanceFileService {
         FileChunk fileChunk = FileChunk.create(command);
         fileChunkDomainRepository.saveAll(List.of(fileChunk));
 
-        return new ChunkUploadResponseDTO(fileChunk.getFullFileMd5(), fileChunk.getNumber(), false);
+        return new ChunkUploadResponseDTO(fileChunk.getFullFileMd5(), false, fileChunk.getMd5(), false);
     }
 
     @Transactional

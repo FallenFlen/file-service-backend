@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface FileChunkJDBCRepository extends CrudRepository<FileChunkDO, String> {
     Optional<FileChunkDO> findByIdAndDeletedIsFalse(String id);
 
+    Optional<FileChunkDO> findFirstByMd5AndDeletedIsFalse(String md5);
+
     List<FileChunkDO> findAllByFullFileMd5AndDeletedIsFalse(String md5);
 
     @Modifying
