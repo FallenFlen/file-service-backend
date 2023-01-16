@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.service;
 
 import com.flz.downloadandupload.common.utils.FileUtils;
+import com.flz.downloadandupload.common.utils.TransactionUtils;
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
@@ -34,6 +35,7 @@ public class AdvanceFileService {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
+    private final TransactionUtils transactionUtils;
 
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
@@ -73,26 +75,15 @@ public class AdvanceFileService {
             return new ChunkMergeResponseDTO(fullFilePath);
         }
 
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
-        if (allChunks.size() != requestDTO.getTotalChunkCount().longValue()) {
-            throw new BusinessException("file merge failed,required chunk count is " +
-                    requestDTO.getTotalChunkCount() + ",but existed chunk count is " + allChunks.size());
-        }
-        // todo 注册回滚逻辑：删除chunk文件
+        List<String> chunkPaths = validateChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
+
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
-        List<String> chunkPaths = allChunks.stream()
-                .sorted(Comparator.comparing(FileChunk::getNumber))
-                .map(FileChunk::getPath)
-                .collect(Collectors.toList());
-        if (chunkPaths.stream()
-                .anyMatch((path) -> !fileUtils.exists(path))) {
-            throw new BusinessException("file chunks damaged");
-        }
         chunkPaths.stream()
                 .map(fileUtils::getContent)
                 .collect(Collectors.toList())
                 .forEach((content) -> fileUtils.append(fullFile.getPath(), new ByteArrayInputStream(content)));
+
         FileUploadRecordCreateCommand fileUploadRecordCreateCommand = FileUploadRecordCreateCommand.builder()
                 .name(fullFile.getName())
                 .path(fullFile.getPath())
@@ -102,6 +93,27 @@ public class AdvanceFileService {
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
         fileChunkDomainRepository.deleteByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
+
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
+    }
+
+    private List<String> validateChunks(String fullFileMd5, long totalChunkCount) {
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(fullFileMd5);
+        if (allChunks.size() != totalChunkCount) {
+            throw new BusinessException("file merge failed,required chunk count is " +
+                    totalChunkCount + ",but existed chunk count is " + allChunks.size());
+        }
+
+        List<String> chunkPaths = allChunks.stream()
+                .sorted(Comparator.comparing(FileChunk::getNumber))
+                .map(FileChunk::getPath)
+                .collect(Collectors.toList());
+        if (chunkPaths.stream()
+                .anyMatch((path) -> !fileUtils.exists(path))) {
+            //todo 校验MD5，删除损坏的chunk
+            throw new BusinessException("file chunks damaged");
+        }
+
+        return chunkPaths;
     }
 }
