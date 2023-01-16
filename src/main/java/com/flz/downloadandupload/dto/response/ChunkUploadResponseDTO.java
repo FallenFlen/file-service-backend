@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ChunkUploadResponseDTO {
     private String fullFileMd5;
-    private Boolean fullFileAlreadyUploaded;
+    private Boolean fullFileAlreadyExisted;
     private String currentChunkMd5;
-    private Boolean chunkAlreadyUploaded;
+    private Boolean chunkAlreadyExisted;
 }

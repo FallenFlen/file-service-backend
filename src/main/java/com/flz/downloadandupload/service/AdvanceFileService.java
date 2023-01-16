@@ -45,21 +45,25 @@ public class AdvanceFileService {
     @Transactional
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
+        String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
         // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
         if (getFullFileActualPath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
             return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
-                    true, null, false);
+                    true, md5, false);
         }
 
         // 2.chunk md5，检测chunk是否被上传过
-        String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
-        boolean isChunkActualExisted = fileChunkDomainRepository.findByMd5(md5)
-                .filter((fileChunk) -> fileUtils.exists(fileChunk.getPath()))
-                .filter((fileChunk) -> fileUtils.validateMd5(md5, fileChunk.getPath()))
-                .isPresent();
-        if (isChunkActualExisted) {
-            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
-                    false, md5, true);
+        Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
+        if (fileChunkOptional.isPresent()) {
+            FileChunk fileChunk = fileChunkOptional.get();
+            boolean actualExisted = fileUtils.exists(fileChunk.getPath());
+            boolean md5Correct = fileUtils.validateMd5(fileChunk.getMd5(), fileChunk.getPath());
+            if (actualExisted && md5Correct) {
+                return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
+                        false, md5, true);
+            }
+            // chunk可能损坏了
+            eventPublisher.publishEvent(new FileChunkDamageEvent(List.of(fileChunk)));
         }
 
         // 3.分块文件上传到disk,将分块信息存入db

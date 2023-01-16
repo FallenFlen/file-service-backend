@@ -6,10 +6,10 @@ import com.flz.downloadandupload.domain.repository.FileChunkDomainRepository;
 import com.flz.downloadandupload.event.FileChunkDamageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,10 +21,9 @@ public class FileChunkDamageEventListener {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUtils fileUtils;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
-    @Transactional
+    @EventListener
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void listen(FileChunkDamageEvent event) {
-        log.info("damaged event listened");
         List<FileChunk> damagedChunks = event.getSource();
 
         // 删除损坏的chunk的表数据
