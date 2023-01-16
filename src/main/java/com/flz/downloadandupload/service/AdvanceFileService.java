@@ -52,7 +52,7 @@ public class AdvanceFileService {
                     true, md5, false);
         }
 
-        // 2.chunk md5，检测chunk是否被上传过
+        // 2.by chunk md5，检测单个chunk是否被上传过，如果是则实现秒传
         Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
         if (fileChunkOptional.isPresent()) {
             FileChunk fileChunk = fileChunkOptional.get();
