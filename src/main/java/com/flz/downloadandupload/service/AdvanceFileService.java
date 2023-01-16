@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -59,6 +60,7 @@ public class AdvanceFileService {
                 .number(chunkUploadRequestDTO.getNumber())
                 .fullFileName(chunkUploadRequestDTO.getFullFileName())
                 .fullFileMd5(chunkUploadRequestDTO.getFullFileMd5())
+                .md5(DigestUtils.md5DigestAsHex(chunk.getInputStream()))
                 .totalChunkCount(chunkUploadRequestDTO.getTotalChunkCount())
                 .currentSize(chunk.getSize())
                 .standardSize(chunkUploadRequestDTO.getStandardSize())
@@ -79,7 +81,7 @@ public class AdvanceFileService {
             return new ChunkMergeResponseDTO(fullFilePath);
         }
 
-        List<String> chunkPaths = validateAndGetChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
+        List<String> chunkPaths = validateAndGetSortedChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
 
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
@@ -101,7 +103,7 @@ public class AdvanceFileService {
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 
-    private List<String> validateAndGetChunks(String fullFileMd5, long totalChunkCount) {
+    private List<String> validateAndGetSortedChunks(String fullFileMd5, long totalChunkCount) {
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(fullFileMd5);
         if (allChunks.size() != totalChunkCount) {
             throw new BusinessException("file merge failed,required chunk count is " +
