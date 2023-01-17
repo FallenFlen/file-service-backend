@@ -51,7 +51,7 @@ public class AdvanceFileService {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
         // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
-        if (getFullFileActualPath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
+        if (validateAndGetFullFilePath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
             return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                     true, md5, false);
         }
@@ -66,7 +66,7 @@ public class AdvanceFileService {
                 return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                         false, md5, true);
             }
-            // chunk可能损坏了
+            // chunk损坏
             eventPublisher.publishEvent(new FileChunkDamageEvent(List.of(fileChunk)));
         }
 
@@ -91,7 +91,7 @@ public class AdvanceFileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) {
-        String fullFileActualPath = getFullFileActualPath(requestDTO.getFullFileMd5());
+        String fullFileActualPath = validateAndGetFullFilePath(requestDTO.getFullFileMd5());
         if (fullFileActualPath != null) {
             return new ChunkMergeResponseDTO(fullFileActualPath);
         }
@@ -118,7 +118,7 @@ public class AdvanceFileService {
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 
-    private String getFullFileActualPath(String fullFileMd5) {
+    private String validateAndGetFullFilePath(String fullFileMd5) {
         return Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
                 .filter((record) -> fileUtils.exists(record.getPath()))
                 .filter((record) -> fileUtils.validateMd5(record.getMd5(), record.getPath()))
@@ -149,7 +149,7 @@ public class AdvanceFileService {
 
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
         String md5 = requestDTO.getFullFileMd5();
-        boolean fullFileExist = getFullFileActualPath(md5) != null;
+        boolean fullFileExist = validateAndGetFullFilePath(md5) != null;
         if (fullFileExist) {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
