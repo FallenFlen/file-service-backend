@@ -13,6 +13,7 @@ import com.flz.downloadandupload.dto.request.ChunkMergeRequestDTO;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
+import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.event.FileChunkDamageEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +28,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -123,7 +126,7 @@ public class AdvanceFileService {
     }
 
     private List<String> validateAndGetSortedChunks(String fullFileMd5, long totalChunkCount) {
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5AndMerged(fullFileMd5);
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
         if (allChunks.size() != totalChunkCount) {
             throw new BusinessException("file merge failed,required chunk count is " +
                     totalChunkCount + ",but existed chunk count is " + allChunks.size());
@@ -141,5 +144,33 @@ public class AdvanceFileService {
                 .sorted(Comparator.comparing(FileChunk::getNumber))
                 .map(FileChunk::getPath)
                 .collect(Collectors.toList());
+    }
+
+    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(String md5) {
+        boolean exist = getFullFileActualPath(md5) != null;
+        if (exist) {
+            return new FileExistenceResponseDTO(true, Collections.emptyList());
+        }
+
+        FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
+        fileExistenceResponseDTO.setFullFileExist(false);
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(md5);
+        List<FileChunk> damagedChunks = allChunks.stream()
+                .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(damagedChunks)) {
+            eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
+        }
+
+        Set<String> damagedChunkIds = damagedChunks.stream()
+                .map(FileChunk::getId)
+                .collect(Collectors.toSet());
+        List<Integer> validChunkNumbers = allChunks.stream()
+                .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
+                .map(FileChunk::getNumber)
+                .distinct()
+                .collect(Collectors.toList());
+        fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
+        return fileExistenceResponseDTO;
     }
 }

@@ -37,7 +37,7 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
     }
 
     @Override
-    public List<FileChunk> findAllByFullFileMd5AndMerged(String md5) {
+    public List<FileChunk> findAllByFullFileMd5(String md5) {
         List<FileChunkDO> allByFullFileMd5AndDeletedIsFalse = fileChunkJDBCRepository.findAllByFullFileMd5AndDeletedIsFalse(md5);
         return allByFullFileMd5AndDeletedIsFalse.stream()
                 .map(converter::toDomain)
