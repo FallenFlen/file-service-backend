@@ -7,6 +7,7 @@ import com.flz.downloadandupload.event.FileChunkDamageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class FileChunkDamageEventListener {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUtils fileUtils;
 
+    @Async
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void listen(FileChunkDamageEvent event) {

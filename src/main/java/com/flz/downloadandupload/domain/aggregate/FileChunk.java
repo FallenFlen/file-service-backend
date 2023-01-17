@@ -4,16 +4,16 @@ import com.flz.downloadandupload.domain.aggregate.base.AuditAggregateRoot;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter(AccessLevel.PROTECTED)
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class FileChunk extends AuditAggregateRoot {
     private Integer number;
     private Long standardSize;

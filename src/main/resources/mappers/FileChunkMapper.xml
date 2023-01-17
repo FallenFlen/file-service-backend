@@ -1,0 +1,13 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.flz.downloadandupload.persist.repository.mapper.FileChunkMapper">
+    <delete id="deleteByIdIn" parameterType="List">
+        delete from `file_chunk`
+        where `id` in
+        <foreach collection="ids" open="(" close=")" separator="," item="it">
+            #{it}
+        </foreach>
+    </delete>
+</mapper>

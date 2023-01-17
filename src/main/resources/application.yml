@@ -19,3 +19,9 @@ file:
   advance:
     upload:
       base-path: "D:/software/dev/test/upload/advance"
+
+mybatis:
+  mapper-locations: classpath:mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases-package: com.flz.downloadandupload.persist.dataobject

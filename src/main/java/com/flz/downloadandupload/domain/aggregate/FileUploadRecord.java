@@ -5,16 +5,16 @@ import com.flz.downloadandupload.domain.command.FileUploadRecordCreateCommand;
 import com.flz.downloadandupload.domain.enums.FileType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter(AccessLevel.PROTECTED)
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class FileUploadRecord extends AuditAggregateRoot {
     private static final long LARGE_FILE_SIZE_CRITICAL_VALUE = 5 * 1024 * 1024;
 

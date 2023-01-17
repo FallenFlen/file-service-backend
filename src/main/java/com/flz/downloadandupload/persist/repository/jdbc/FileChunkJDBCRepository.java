@@ -19,7 +19,4 @@ public interface FileChunkJDBCRepository extends CrudRepository<FileChunkDO, Str
     @Query("delete from `file_chunk` where `full_file_md5`=:md5")
     List<Integer> deleteAllByFullFileMd5(String md5);
 
-    @Modifying
-    @Query("delete from `file_chunk` where `id`in:ids")
-    List<Integer> deleteAllByIds(List<String> ids);
 }

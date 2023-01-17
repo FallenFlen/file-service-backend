@@ -6,6 +6,7 @@ import com.flz.downloadandupload.exception.NotFoundException;
 import com.flz.downloadandupload.persist.converter.FileChunkDoConverter;
 import com.flz.downloadandupload.persist.dataobject.FileChunkDO;
 import com.flz.downloadandupload.persist.repository.jdbc.FileChunkJDBCRepository;
+import com.flz.downloadandupload.persist.repository.mapper.FileChunkMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository {
     private final FileChunkJDBCRepository fileChunkJDBCRepository;
+    private final FileChunkMapper fileChunkMapper;
     private final FileChunkDoConverter converter = FileChunkDoConverter.INSTANCE;
 
     @Override
@@ -36,7 +38,8 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
 
     @Override
     public List<FileChunk> findAllByFullFileMd5AndMerged(String md5) {
-        return fileChunkJDBCRepository.findAllByFullFileMd5AndDeletedIsFalse(md5).stream()
+        List<FileChunkDO> allByFullFileMd5AndDeletedIsFalse = fileChunkJDBCRepository.findAllByFullFileMd5AndDeletedIsFalse(md5);
+        return allByFullFileMd5AndDeletedIsFalse.stream()
                 .map(converter::toDomain)
                 .collect(Collectors.toList());
     }
@@ -48,7 +51,7 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
 
     @Override
     public void deleteByIds(List<String> ids) {
-        fileChunkJDBCRepository.deleteAllByIds(ids);
+        fileChunkMapper.deleteByIdIn(ids);
     }
 
     @Override
