@@ -100,10 +100,11 @@ public class AdvanceFileService {
 
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
-        chunkPaths.stream()
-                .map(fileUtils::getContent)
-                .collect(Collectors.toList())
-                .forEach((content) -> fileUtils.append(fullFile.getPath(), new ByteArrayInputStream(content)));
+        // 防止大文件oom
+        chunkPaths.forEach((path) -> {
+            byte[] content = fileUtils.getContent(path);
+            fileUtils.append(fullFile.getPath(), new ByteArrayInputStream(content));
+        });
 
         FileUploadRecordCreateCommand fileUploadRecordCreateCommand = FileUploadRecordCreateCommand.builder()
                 .name(fullFile.getName())
