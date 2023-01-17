@@ -12,13 +12,12 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class FileValidateEventListener implements Listener<FileValidateEvent> {
+public class FileValidateEventListener {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
 
     @Async
     @EventListener
-    @Override
     public void listen(FileValidateEvent event) {
         String fullFileMd5 = event.getSource();
         Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
