@@ -11,6 +11,7 @@ import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainReposit
 import com.flz.downloadandupload.domain.valueobject.FileValueObject;
 import com.flz.downloadandupload.dto.request.ChunkMergeRequestDTO;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
+import com.flz.downloadandupload.dto.request.FileExistenceCheckRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
@@ -146,9 +147,10 @@ public class AdvanceFileService {
                 .collect(Collectors.toList());
     }
 
-    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(String md5) {
-        boolean exist = getFullFileActualPath(md5) != null;
-        if (exist) {
+    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
+        String md5 = requestDTO.getFullFileMd5();
+        boolean fullFileExist = getFullFileActualPath(md5) != null;
+        if (fullFileExist) {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
 
