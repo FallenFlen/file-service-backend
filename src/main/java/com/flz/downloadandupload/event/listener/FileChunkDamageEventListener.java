@@ -18,10 +18,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class FileChunkDamageEventListener {
+public class FileChunkDamageEventListener implements Listener<FileChunkDamageEvent> {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUtils fileUtils;
 
+    @Override
     @Async
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
