@@ -133,9 +133,7 @@ public class AdvanceFileService {
                     totalChunkCount + ",but existed chunk count is " + allChunks.size());
         }
 
-        List<FileChunk> damagedChunks = allChunks.stream()
-                .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
-                .collect(Collectors.toList());
+        List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
         if (!CollectionUtils.isEmpty(damagedChunks)) {
             transactionUtils.runAfterRollback(() -> eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks)));
             throw new BusinessException("file chunks damaged");
@@ -157,9 +155,7 @@ public class AdvanceFileService {
         FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
         fileExistenceResponseDTO.setFullFileExist(false);
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(md5);
-        List<FileChunk> damagedChunks = allChunks.stream()
-                .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
-                .collect(Collectors.toList());
+        List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
         if (!CollectionUtils.isEmpty(damagedChunks)) {
             eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
         }
@@ -175,4 +171,11 @@ public class AdvanceFileService {
         fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
         return fileExistenceResponseDTO;
     }
+
+    private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {
+        return allChunks.stream()
+                .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
+                .collect(Collectors.toList());
+    }
+
 }
