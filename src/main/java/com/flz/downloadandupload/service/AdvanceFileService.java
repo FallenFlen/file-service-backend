@@ -16,6 +16,7 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.event.FileChunkDamageEvent;
+import com.flz.downloadandupload.event.FileValidateEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -147,15 +148,16 @@ public class AdvanceFileService {
     }
 
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
-        String md5 = requestDTO.getFullFileMd5();
-        boolean fullFileExist = validateAndGetFullFilePath(md5) != null;
+        String fullFileMd5 = requestDTO.getFullFileMd5();
+        boolean fullFileExist = validateAndGetFullFilePath(fullFileMd5) != null;
         if (fullFileExist) {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
 
+        eventPublisher.publishEvent(new FileValidateEvent(fullFileMd5));
         FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
         fileExistenceResponseDTO.setFullFileExist(false);
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(md5);
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
         List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
         if (!CollectionUtils.isEmpty(damagedChunks)) {
             eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));

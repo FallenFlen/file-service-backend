@@ -39,4 +39,9 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
                 .map(converter::toDomain)
                 .orElse(null);
     }
+
+    @Override
+    public void deleteById(String id) {
+        jdbcRepository.deleteById(id);
+    }
 }
