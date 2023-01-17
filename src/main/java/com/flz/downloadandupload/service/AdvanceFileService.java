@@ -109,7 +109,7 @@ public class AdvanceFileService {
                 .build();
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
-        fileChunkDomainRepository.deleteByFullFileMd5AndMerged(requestDTO.getFullFileMd5());
+        fileChunkDomainRepository.deleteByFullFileMd5(requestDTO.getFullFileMd5());
 
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
