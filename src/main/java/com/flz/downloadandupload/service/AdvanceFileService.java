@@ -165,15 +165,9 @@ public class AdvanceFileService {
 
         FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
         fileExistenceResponseDTO.setFullFileExist(false);
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
-        List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
-        if (!CollectionUtils.isEmpty(damagedChunks)) {
-            eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
-        }
 
-        Set<String> damagedChunkIds = damagedChunks.stream()
-                .map(FileChunk::getId)
-                .collect(Collectors.toSet());
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
+        Set<String> damagedChunkIds = validateOrElseCleanDamagedChunks(allChunks);
         List<Integer> validChunkNumbers = allChunks.stream()
                 .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
                 .map(FileChunk::getNumber)
@@ -181,7 +175,19 @@ public class AdvanceFileService {
                 .sorted(Integer::compareTo)
                 .collect(Collectors.toList());
         fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
+
         return fileExistenceResponseDTO;
+    }
+
+    private Set<String> validateOrElseCleanDamagedChunks(List<FileChunk> allChunks) {
+        List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
+        if (!CollectionUtils.isEmpty(damagedChunks)) {
+            eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
+        }
+
+        return damagedChunks.stream()
+                .map(FileChunk::getId)
+                .collect(Collectors.toSet());
     }
 
     private void validateOrElseCleanFileUploadRecord(String fullFileMd5) {
