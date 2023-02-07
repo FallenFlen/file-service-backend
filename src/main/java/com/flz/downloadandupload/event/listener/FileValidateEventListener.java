@@ -24,11 +24,13 @@ public class FileValidateEventListener {
                 .ifPresent((record) -> {
                     String path = record.getPath();
                     boolean exists = fileUtils.exists(path);
-                    boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
-                    if (!exists) {
-                        fileUploadRecordDomainRepository.deleteById(record.getId());
-                    } else if (!md5Correct) {
-                        fileUtils.delete(path);
+                    if (exists) {
+                        boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
+                        if (!md5Correct) {
+                            fileUtils.delete(path);
+                            fileUploadRecordDomainRepository.deleteById(record.getId());
+                        }
+                    } else {
                         fileUploadRecordDomainRepository.deleteById(record.getId());
                     }
                 });
