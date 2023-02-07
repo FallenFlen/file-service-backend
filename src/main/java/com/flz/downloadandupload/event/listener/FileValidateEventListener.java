@@ -25,10 +25,12 @@ public class FileValidateEventListener {
                     String path = record.getPath();
                     boolean exists = fileUtils.exists(path);
                     boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
-                    if (exists && !md5Correct) {
+                    if (!exists) {
+                        fileUploadRecordDomainRepository.deleteById(record.getId());
+                    } else if (!md5Correct) {
                         fileUtils.delete(path);
+                        fileUploadRecordDomainRepository.deleteById(record.getId());
                     }
-                    fileUploadRecordDomainRepository.deleteById(record.getId());
                 });
     }
 }

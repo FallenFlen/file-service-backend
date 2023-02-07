@@ -40,7 +40,6 @@ public class FileUtils implements InitializingBean {
             Files.delete(Path.of(path));
         } catch (IOException e) {
             log.error("file delete failed:", e);
-            throw new RuntimeException("file delete failed:" + e.getMessage());
         }
     }
 
@@ -53,7 +52,7 @@ public class FileUtils implements InitializingBean {
             return Files.readAllBytes(Path.of(path));
         } catch (IOException e) {
             log.error("common download file failed:{}", e);
-            throw new RuntimeException("file download failed:" + e.getMessage());
+            return new byte[0];
         }
     }
 
