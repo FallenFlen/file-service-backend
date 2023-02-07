@@ -96,8 +96,9 @@ public class AdvanceFileService {
         if (fullFileActualPath != null) {
             return new ChunkMergeResponseDTO(fullFileActualPath);
         }
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(requestDTO.getFullFileMd5());
 
-        List<String> chunkPaths = validateAndGetSortedChunks(requestDTO.getFullFileMd5(), requestDTO.getTotalChunkCount());
+        List<String> chunkPaths = validateAndGetSortedChunks(allChunks, requestDTO.getTotalChunkCount());
 
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
@@ -115,9 +116,17 @@ public class AdvanceFileService {
                 .build();
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
-        fileChunkDomainRepository.deleteByFullFileMd5(requestDTO.getFullFileMd5());
 
+        cleanAllChunks(allChunks, requestDTO.getFullFileMd5());
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
+    }
+
+    private void cleanAllChunks(List<FileChunk> allChunks, String fullFileMd5) {
+        allChunks.stream()
+                .map(FileChunk::getPath)
+                .filter(fileUtils::exists)
+                .forEach(fileUtils::delete);
+        fileChunkDomainRepository.deleteByFullFileMd5(fullFileMd5);
     }
 
     private String validateAndGetFullFilePath(String fullFileMd5) {
@@ -128,8 +137,7 @@ public class AdvanceFileService {
                 .orElse(null);
     }
 
-    private List<String> validateAndGetSortedChunks(String fullFileMd5, long totalChunkCount) {
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
+    private List<String> validateAndGetSortedChunks(List<FileChunk> allChunks, long totalChunkCount) {
         if (allChunks.size() != totalChunkCount) {
             throw new BusinessException("file merge failed,required chunk count is " +
                     totalChunkCount + ",but existed chunk count is " + allChunks.size());
