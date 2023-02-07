@@ -16,7 +16,6 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.event.FileChunkDamageEvent;
-import com.flz.downloadandupload.event.FileValidateEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -162,7 +161,7 @@ public class AdvanceFileService {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
 
-        eventPublisher.publishEvent(new FileValidateEvent(fullFileMd5));
+        validateOrElseCleanFileUploadRecord(fullFileMd5);
 
         FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
         fileExistenceResponseDTO.setFullFileExist(false);
@@ -183,6 +182,23 @@ public class AdvanceFileService {
                 .collect(Collectors.toList());
         fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
         return fileExistenceResponseDTO;
+    }
+
+    private void validateOrElseCleanFileUploadRecord(String fullFileMd5) {
+        Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
+                .ifPresent((record) -> {
+                    String path = record.getPath();
+                    boolean exists = fileUtils.exists(path);
+                    if (exists) {
+                        boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
+                        if (!md5Correct) {
+                            fileUtils.delete(path);
+                            fileUploadRecordDomainRepository.deleteById(record.getId());
+                        }
+                    } else {
+                        fileUploadRecordDomainRepository.deleteById(record.getId());
+                    }
+                });
     }
 
     private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {
