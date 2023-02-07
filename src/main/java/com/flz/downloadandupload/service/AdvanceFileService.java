@@ -170,6 +170,7 @@ public class AdvanceFileService {
                 .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
                 .map(FileChunk::getNumber)
                 .distinct()
+                .sorted(Integer::compareTo)
                 .collect(Collectors.toList());
         fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
         return fileExistenceResponseDTO;
