@@ -8,21 +8,18 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class TransactionUtils {
 
     public void runAfterRollback(Runnable runnable) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCompletion(int status) {
-                if (status == STATUS_ROLLED_BACK) {
-                    runnable.run();
-                }
-            }
-        });
+        runAfterByStatus(TransactionSynchronization.STATUS_ROLLED_BACK, runnable);
     }
 
     public void runAfterCommit(Runnable runnable) {
+        runAfterByStatus(TransactionSynchronization.STATUS_COMMITTED, runnable);
+    }
+
+    private void runAfterByStatus(int currentStatus, Runnable runnable) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
-                if (status == STATUS_COMMITTED) {
+                if (status == currentStatus) {
                     runnable.run();
                 }
             }
