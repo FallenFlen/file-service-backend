@@ -154,7 +154,6 @@ public class AdvanceFileService {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
 
-        eventPublisher.publishEvent(new FileValidateEvent(fullFileMd5));
         FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
         fileExistenceResponseDTO.setFullFileExist(false);
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
@@ -173,6 +172,8 @@ public class AdvanceFileService {
                 .sorted(Integer::compareTo)
                 .collect(Collectors.toList());
         fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
+
+        eventPublisher.publishEvent(new FileValidateEvent(fullFileMd5));
         return fileExistenceResponseDTO;
     }
 
