@@ -12,4 +12,6 @@ public interface FileUploadRecordDomainRepository {
     FileUploadRecord findByMd5(String md5);
 
     void deleteById(String id);
+
+    List<FileUploadRecord> findAll();
 }

@@ -1,7 +1,9 @@
 package com.flz.downloadandupload.service;
 
 import com.flz.downloadandupload.common.utils.FileUtils;
+import com.flz.downloadandupload.common.utils.ResponseUtils;
 import com.flz.downloadandupload.common.utils.TransactionUtils;
+import com.flz.downloadandupload.converter.FileUploadRecordDTOConverter;
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
@@ -15,6 +17,7 @@ import com.flz.downloadandupload.dto.request.FileExistenceCheckRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
+import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
 import com.flz.downloadandupload.event.FileChunkDamageEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
@@ -45,6 +50,7 @@ public class AdvanceFileService {
     private final FileUtils fileUtils;
     private final TransactionUtils transactionUtils;
     private final ApplicationEventPublisher eventPublisher;
+    private final FileUploadRecordDTOConverter converter = FileUploadRecordDTOConverter.INSTANCE;
 
     @Transactional
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
@@ -213,4 +219,19 @@ public class AdvanceFileService {
                 .collect(Collectors.toList());
     }
 
+    public void download(String path, HttpServletResponse response) throws IOException {
+        FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository.findByPath(path);
+        FileInputStream fis = new FileInputStream(fileUploadRecord.getPath());
+        byte[] buffer = new byte[1024 * 1024 * 5];
+        while (fis.read(buffer) != -1) {
+            ResponseUtils.responseFile(response, fileUploadRecord.getName(), buffer);
+        }
+        fis.close();
+    }
+
+    public List<FileUploadRecordResponseDTO> findAll() {
+        return fileUploadRecordDomainRepository.findAll().stream()
+                .map(converter::toDTO)
+                .collect(Collectors.toList());
+    }
 }

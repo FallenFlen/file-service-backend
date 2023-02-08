@@ -44,4 +44,11 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
     public void deleteById(String id) {
         jdbcRepository.deleteById(id);
     }
+
+    @Override
+    public List<FileUploadRecord> findAll() {
+        return jdbcRepository.findAll().stream()
+                .map(converter::toDomain)
+                .collect(Collectors.toList());
+    }
 }
