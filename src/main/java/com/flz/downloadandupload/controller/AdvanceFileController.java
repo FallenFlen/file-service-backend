@@ -26,7 +26,7 @@ import java.io.IOException;
 public class AdvanceFileController {
     private final AdvanceFileService advanceFileService;
 
-    @PostMapping("/check-existence")
+    @PostMapping("/chunk/validate-and-clean-damaged")
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(@RequestBody @Valid FileExistenceCheckRequestDTO requestDTO) {
         return advanceFileService.checkFileExistenceAndClearDamaged(requestDTO);
     }
