@@ -121,16 +121,13 @@ public class AdvanceFileService {
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
 
-        cleanAllChunks(allChunks, requestDTO.getFullFileMd5());
-        return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
-    }
-
-    private void cleanAllChunks(List<FileChunk> allChunks, String fullFileMd5) {
         allChunks.stream()
                 .map(FileChunk::getPath)
                 .filter(fileUtils::exists)
                 .forEach(fileUtils::delete);
-        fileChunkDomainRepository.deleteByFullFileMd5(fullFileMd5);
+        fileChunkDomainRepository.deleteByFullFileMd5(requestDTO.getFullFileMd5());
+
+        return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 
     private String getActuallyExistedFullFilePath(String fullFileMd5) {
