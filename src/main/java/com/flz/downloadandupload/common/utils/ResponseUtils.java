@@ -16,6 +16,7 @@ public class ResponseUtils {
         try {
             assembleDownloadHeader(response, fileName);
             response.getOutputStream().write(content, 0, content.length);
+            response.getOutputStream().flush();
         } catch (Exception e) {
             log.error("response file error:{}", e);
             throw new RuntimeException(e);
@@ -50,6 +51,7 @@ public class ResponseUtils {
             endByte = Long.parseLong(range.substring(rangeSplitIndex + 1));
         }
 
+        response.addHeader("Content-Length", String.valueOf(endByte - startByte + 1));
         // Content-Range，格式为：[要下载的开始位置]-[结束位置]/[文件总大小]
         response.setHeader("Content-Range", "bytes " + startByte + "-" + endByte + "/" + size);
     }
@@ -67,6 +69,9 @@ public class ResponseUtils {
             }
             bufferedOutputStream.flush();
             response.flushBuffer();
+            fileInputStream.close();
+            bufferedOutputStream.close();
+            responseOutputStream.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
