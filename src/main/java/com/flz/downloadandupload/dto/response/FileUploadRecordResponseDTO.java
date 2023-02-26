@@ -12,5 +12,6 @@ import lombok.Setter;
 public class FileUploadRecordResponseDTO {
     private String id;
     private String name;
+    private String path;
     private Long size;
 }
