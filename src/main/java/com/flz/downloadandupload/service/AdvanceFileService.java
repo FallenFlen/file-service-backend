@@ -56,7 +56,7 @@ public class AdvanceFileService {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
         // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
-        if (validateAndGetFullFilePath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
+        if (getActuallyExistedFullFilePath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
             return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                     true, md5, false);
         }
@@ -65,13 +65,12 @@ public class AdvanceFileService {
         Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
         if (fileChunkOptional.isPresent()) {
             FileChunk fileChunk = fileChunkOptional.get();
-            boolean actualExisted = fileUtils.exists(fileChunk.getPath());
-            boolean md5Correct = fileUtils.validateMd5(fileChunk.getMd5(), fileChunk.getPath());
-            if (actualExisted && md5Correct) {
+            List<FileChunk> damagedChunks = getDamagedChunks(List.of(fileChunk));
+            if (!CollectionUtils.isEmpty(damagedChunks)) {
                 return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                         false, md5, true);
             }
-            // chunk损坏
+            // chunk损坏，清除
             eventPublisher.publishEvent(new FileChunkDamageEvent(List.of(fileChunk)));
         }
 
@@ -96,10 +95,11 @@ public class AdvanceFileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) {
-        String fullFileActualPath = validateAndGetFullFilePath(requestDTO.getFullFileMd5());
+        String fullFileActualPath = getActuallyExistedFullFilePath(requestDTO.getFullFileMd5());
         if (fullFileActualPath != null) {
             return new ChunkMergeResponseDTO(fullFileActualPath);
         }
+
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(requestDTO.getFullFileMd5());
 
         List<String> chunkPaths = validateAndGetSortedChunks(allChunks, requestDTO.getTotalChunkCount());
@@ -133,7 +133,7 @@ public class AdvanceFileService {
         fileChunkDomainRepository.deleteByFullFileMd5(fullFileMd5);
     }
 
-    private String validateAndGetFullFilePath(String fullFileMd5) {
+    private String getActuallyExistedFullFilePath(String fullFileMd5) {
         return Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
                 .filter((record) -> fileUtils.exists(record.getPath()))
                 .filter((record) -> fileUtils.validateMd5(record.getMd5(), record.getPath()))
@@ -161,7 +161,7 @@ public class AdvanceFileService {
 
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
         String fullFileMd5 = requestDTO.getFullFileMd5();
-        boolean fullFileExist = validateAndGetFullFilePath(fullFileMd5) != null;
+        boolean fullFileExist = getActuallyExistedFullFilePath(fullFileMd5) != null;
         if (fullFileExist) {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
