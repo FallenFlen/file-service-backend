@@ -31,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
@@ -221,12 +220,7 @@ public class AdvanceFileService {
 
     public void download(String path, HttpServletResponse response) throws IOException {
         FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository.findByPath(path);
-        FileInputStream fis = new FileInputStream(fileUploadRecord.getPath());
-        byte[] buffer = new byte[1024 * 1024 * 5];
-        while (fis.read(buffer) != -1) {
-            ResponseUtils.responseFile(response, fileUploadRecord.getName(), buffer);
-        }
-        fis.close();
+        ResponseUtils.downloadWithChunk(response, fileUploadRecord.getName(), fileUploadRecord.getPath(), fileUploadRecord.getSize());
     }
 
     public List<FileUploadRecordResponseDTO> findAll() {

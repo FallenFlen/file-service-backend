@@ -40,6 +40,6 @@ public class CommonFileService {
     public void download(String path, HttpServletResponse response) {
         FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository.findByPath(path);
         byte[] content = fileUtils.getContent(fileUploadRecord.getPath());
-        ResponseUtils.responseFile(response, fileUploadRecord.getPath(), content);
+        ResponseUtils.download(response, fileUploadRecord.getPath(), content);
     }
 }
