@@ -24,7 +24,6 @@ public class FileUtils implements InitializingBean {
     private String baseUploadPathStr;
     private static Path baseUploadPath;
 
-
     public boolean validateMd5(String currentMd5, String path) {
         byte[] content = getContent(path);
         return exists(path) && DigestUtils.md5DigestAsHex(content).equals(currentMd5);
@@ -50,7 +49,7 @@ public class FileUtils implements InitializingBean {
         try {
             return Files.readAllBytes(Path.of(path));
         } catch (IOException e) {
-            log.error("common download file failed:{}", e);
+            log.error("common download file failed:", e);
             return new byte[0];
         }
     }
@@ -59,7 +58,7 @@ public class FileUtils implements InitializingBean {
         try {
             Files.write(Path.of(path), inputStream.readAllBytes(), StandardOpenOption.APPEND);
         } catch (IOException e) {
-            log.error("append file failed:{}", e);
+            log.error("append file failed:", e);
             throw new RuntimeException(e);
         }
     }
@@ -83,7 +82,7 @@ public class FileUtils implements InitializingBean {
             Files.write(filePath, inputStream.readAllBytes(), option);
             return new FileValueObject(mixedFileName, filePath.toString());
         } catch (IOException e) {
-            log.error("upload file failed:{}", e);
+            log.error("upload file failed:", e);
             throw new RuntimeException(e);
         }
     }
