@@ -34,9 +34,9 @@ public class FileController {
         return fileService.findAll();
     }
 
-    @PostMapping("/chunk/validate-and-clean-damaged")
-    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(@RequestBody @Valid FileExistenceCheckRequestDTO requestDTO) {
-        return fileService.checkFileExistenceAndClearDamaged(requestDTO);
+    @PostMapping("/chunk/check-existence-and-clean-damaged")
+    public FileExistenceResponseDTO checkChunkExistenceAndClearDamaged(@RequestBody @Valid FileExistenceCheckRequestDTO requestDTO) {
+        return fileService.checkChunkExistenceAndClearDamaged(requestDTO);
     }
 
     @PostMapping("/chunk")

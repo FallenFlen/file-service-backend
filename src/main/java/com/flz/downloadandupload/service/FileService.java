@@ -121,7 +121,7 @@ public class FileService {
     }
 
     @Transactional
-    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
+    public FileExistenceResponseDTO checkChunkExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
         String fullFileMd5 = requestDTO.getFullFileMd5();
         if (isFullFileExistedAndValid(fullFileMd5)) {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
