@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.common.utils;
 
+import com.flz.downloadandupload.common.constant.FileConstant;
 import com.flz.downloadandupload.domain.valueobject.FileValueObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -7,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -24,9 +24,6 @@ public class FileUtils implements InitializingBean {
     private String baseUploadPathStr;
     private static Path baseUploadPath;
 
-    private static final String FILE_SEPARATOR = File.separator;
-    private static final String DOT = ".";
-    private static final String FILE_NAME_SEPARATOR = "-";
 
     public boolean validateMd5(String currentMd5, String path) {
         byte[] content = getContent(path);
@@ -71,14 +68,14 @@ public class FileUtils implements InitializingBean {
         try {
             String suffix = getSuffix(originalFileName);
             String pureFileName = getPureFileName(originalFileName);
-            String mixedFileName = String.join(FILE_NAME_SEPARATOR,
+            String mixedFileName = String.join(FileConstant.FILE_NAME_SEPARATOR,
                             pureFileName,
                             String.valueOf(System.currentTimeMillis()),
                             UUID.randomUUID().toString())
-                    .concat(DOT)
+                    .concat(".")
                     .concat(suffix);
             Path filePath = Path.of(baseUploadPath.toString()
-                    .concat(FILE_SEPARATOR)
+                    .concat(FileConstant.FILE_SEPARATOR)
                     .concat(mixedFileName));
             if (!Set.of(StandardOpenOption.CREATE, StandardOpenOption.CREATE_NEW).contains(option) && !exists(filePath)) {
                 Files.createFile(filePath);
@@ -103,7 +100,7 @@ public class FileUtils implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        baseUploadPath = Path.of(baseUploadPathStr.replace("/", FILE_SEPARATOR));
+        baseUploadPath = Path.of(baseUploadPathStr.replace("/", FileConstant.FILE_SEPARATOR));
 
         if (!Files.exists(baseUploadPath)) {
             Files.createDirectory(baseUploadPath);

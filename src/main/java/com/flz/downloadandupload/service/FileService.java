@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.service;
 
+import com.flz.downloadandupload.common.constant.FileConstant;
 import com.flz.downloadandupload.common.utils.FileUtils;
 import com.flz.downloadandupload.common.utils.TransactionUtils;
 import com.flz.downloadandupload.converter.FileUploadRecordDTOConverter;
@@ -50,8 +51,8 @@ public class FileService {
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
-        // 1.整体文件md5检查文件是否已被上传过，如果是则实现秒传
-        if (getActuallyExistedFullFilePath(chunkUploadRequestDTO.getFullFileMd5()) != null) {
+        // 1.整体文件md5检查文件是否已被上传过且未被损坏，如果是则实现秒传
+        if (!isFullFileExistedAndValid(chunkUploadRequestDTO.getFullFileMd5())) {
             return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                     true, md5, false);
         }
@@ -60,16 +61,17 @@ public class FileService {
         Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
         if (fileChunkOptional.isPresent()) {
             FileChunk fileChunk = fileChunkOptional.get();
-            List<FileChunk> damagedChunks = getDamagedChunks(List.of(fileChunk));
-            if (!CollectionUtils.isEmpty(damagedChunks)) {
+            if (!isFullFileExistedAndValid(fileChunk.getMd5())) {
                 return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                         false, md5, true);
             }
         }
 
         // 3.分块文件上传到disk,将分块信息存入db
-        FileValueObject chunkFile = fileUtils.uploadToDisk(chunkUploadRequestDTO.getFullFileName().concat("-chunk"),
-                chunk.getInputStream(), StandardOpenOption.TRUNCATE_EXISTING);
+        FileValueObject chunkFile = fileUtils.uploadToDisk(
+                chunkUploadRequestDTO.getFullFileName().concat(FileConstant.CHUNK_SUFFIX),
+                chunk.getInputStream(),
+                StandardOpenOption.TRUNCATE_EXISTING);
         FileChunkCreateCommand command = FileChunkCreateCommand.builder()
                 .number(chunkUploadRequestDTO.getNumber())
                 .fullFileName(chunkUploadRequestDTO.getFullFileName())
@@ -126,6 +128,10 @@ public class FileService {
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 
+    private boolean isFullFileExistedAndValid(String fullFileMd5) {
+        return getActuallyExistedFullFilePath(fullFileMd5) != null;
+    }
+
     private String getActuallyExistedFullFilePath(String fullFileMd5) {
         return Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
                 .filter((record) -> fileUtils.validateMd5(record.getMd5(), record.getPath()))
@@ -152,8 +158,7 @@ public class FileService {
 
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
         String fullFileMd5 = requestDTO.getFullFileMd5();
-        boolean fullFileExist = getActuallyExistedFullFilePath(fullFileMd5) != null;
-        if (fullFileExist) {
+        if (isFullFileExistedAndValid(fullFileMd5)) {
             return new FileExistenceResponseDTO(true, Collections.emptyList());
         }
 
