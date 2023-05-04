@@ -15,11 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -36,11 +34,6 @@ public class FileController {
         return fileService.findAll();
     }
 
-    @GetMapping("/download")
-    public void download(@RequestParam String path, HttpServletResponse response) throws IOException {
-        fileService.download(path, response);
-    }
-
     @PostMapping("/chunk/validate-and-clean-damaged")
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(@RequestBody @Valid FileExistenceCheckRequestDTO requestDTO) {
         return fileService.checkFileExistenceAndClearDamaged(requestDTO);
@@ -53,7 +46,7 @@ public class FileController {
     }
 
     @PostMapping("/chunk/merge")
-    public ChunkMergeResponseDTO merge(@RequestBody @Valid ChunkMergeRequestDTO requestDTO) throws IOException {
+    public ChunkMergeResponseDTO merge(@RequestBody @Valid ChunkMergeRequestDTO requestDTO) {
         return fileService.merge(requestDTO);
     }
 }

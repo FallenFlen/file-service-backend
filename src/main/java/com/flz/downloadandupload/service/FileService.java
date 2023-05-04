@@ -1,7 +1,6 @@
 package com.flz.downloadandupload.service;
 
 import com.flz.downloadandupload.common.utils.FileUtils;
-import com.flz.downloadandupload.common.utils.ResponseUtils;
 import com.flz.downloadandupload.common.utils.TransactionUtils;
 import com.flz.downloadandupload.converter.FileUploadRecordDTOConverter;
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
@@ -18,18 +17,15 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
-import com.flz.downloadandupload.event.FileChunkDamageEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
@@ -48,7 +44,6 @@ public class FileService {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
     private final TransactionUtils transactionUtils;
-    private final ApplicationEventPublisher eventPublisher;
     private final FileUploadRecordDTOConverter converter = FileUploadRecordDTOConverter.INSTANCE;
 
     @Transactional
@@ -70,8 +65,6 @@ public class FileService {
                 return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                         false, md5, true);
             }
-            // chunk损坏，清除
-            eventPublisher.publishEvent(new FileChunkDamageEvent(List.of(fileChunk)));
         }
 
         // 3.分块文件上传到disk,将分块信息存入db
@@ -121,11 +114,14 @@ public class FileService {
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
 
-        allChunks.stream()
-                .map(FileChunk::getPath)
-                .filter(fileUtils::exists)
-                .forEach(fileUtils::delete);
-        fileChunkDomainRepository.deleteByFullFileMd5(requestDTO.getFullFileMd5());
+        // 事务提交后清除chunk
+        transactionUtils.runAfterCommit(() -> {
+            allChunks.stream()
+                    .map(FileChunk::getPath)
+                    .filter(fileUtils::exists)
+                    .forEach(fileUtils::delete);
+            fileChunkDomainRepository.deleteByFullFileMd5(requestDTO.getFullFileMd5());
+        });
 
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
@@ -146,7 +142,6 @@ public class FileService {
 
         List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
         if (!CollectionUtils.isEmpty(damagedChunks)) {
-            transactionUtils.runAfterRollback(() -> eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks)));
             throw new BusinessException("file chunks damaged");
         }
 
@@ -169,7 +164,9 @@ public class FileService {
         fileExistenceResponseDTO.setFullFileExist(false);
 
         List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
-        Set<String> damagedChunkIds = validateOrElseCleanDamagedChunks(allChunks);
+        Set<String> damagedChunkIds = getDamagedChunks(allChunks).stream()
+                .map(FileChunk::getId)
+                .collect(Collectors.toSet());
         List<Integer> validChunkNumbers = allChunks.stream()
                 .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
                 .map(FileChunk::getNumber)
@@ -179,17 +176,6 @@ public class FileService {
         fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
 
         return fileExistenceResponseDTO;
-    }
-
-    private Set<String> validateOrElseCleanDamagedChunks(List<FileChunk> allChunks) {
-        List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
-        if (!CollectionUtils.isEmpty(damagedChunks)) {
-            eventPublisher.publishEvent(new FileChunkDamageEvent(damagedChunks));
-        }
-
-        return damagedChunks.stream()
-                .map(FileChunk::getId)
-                .collect(Collectors.toSet());
     }
 
     private void validateOrElseCleanFileUploadRecord(String fullFileMd5) {
@@ -213,11 +199,6 @@ public class FileService {
         return allChunks.stream()
                 .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
                 .collect(Collectors.toList());
-    }
-
-    public void download(String path, HttpServletResponse response) throws IOException {
-        FileUploadRecord fileUploadRecord = fileUploadRecordDomainRepository.findByPath(path);
-        ResponseUtils.downloadWithChunk(response, fileUploadRecord.getName(), fileUploadRecord.getPath(), fileUploadRecord.getSize());
     }
 
     public List<FileUploadRecordResponseDTO> findAll() {
