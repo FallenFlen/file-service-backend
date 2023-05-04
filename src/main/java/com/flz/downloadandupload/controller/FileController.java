@@ -7,7 +7,7 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
-import com.flz.downloadandupload.service.AdvanceFileService;
+import com.flz.downloadandupload.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,32 +28,32 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/files/advance")
-public class AdvanceFileController {
-    private final AdvanceFileService advanceFileService;
+public class FileController {
+    private final FileService fileService;
 
     @GetMapping("/all")
     public List<FileUploadRecordResponseDTO> findAll() {
-        return advanceFileService.findAll();
+        return fileService.findAll();
     }
 
     @GetMapping("/download")
     public void download(@RequestParam String path, HttpServletResponse response) throws IOException {
-        advanceFileService.download(path, response);
+        fileService.download(path, response);
     }
 
     @PostMapping("/chunk/validate-and-clean-damaged")
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(@RequestBody @Valid FileExistenceCheckRequestDTO requestDTO) {
-        return advanceFileService.checkFileExistenceAndClearDamaged(requestDTO);
+        return fileService.checkFileExistenceAndClearDamaged(requestDTO);
     }
 
     @PostMapping("/chunk")
     @ResponseStatus(HttpStatus.CREATED)
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO requestDTO) throws IOException {
-        return advanceFileService.uploadChunk(requestDTO);
+        return fileService.uploadChunk(requestDTO);
     }
 
     @PostMapping("/chunk/merge")
     public ChunkMergeResponseDTO merge(@RequestBody @Valid ChunkMergeRequestDTO requestDTO) throws IOException {
-        return advanceFileService.merge(requestDTO);
+        return fileService.merge(requestDTO);
     }
 }

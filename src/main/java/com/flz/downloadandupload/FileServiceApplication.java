@@ -10,10 +10,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @EnableJdbcRepositories(basePackages = "com.flz.downloadandupload")
 @MapperScan(basePackages = {"com.flz.downloadandupload.persist.repository.mapper"})
-public class SpringbootDownloadAndUploadApplication {
+public class FileServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringbootDownloadAndUploadApplication.class, args);
+		SpringApplication.run(FileServiceApplication.class, args);
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.flz.downloadandupload.exception.handle;
+package com.flz.downloadandupload.exception.handler;
 
 import com.flz.downloadandupload.common.dto.ErrorResult;
 import com.flz.downloadandupload.exception.BusinessException;

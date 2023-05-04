@@ -4,6 +4,6 @@ import lombok.Value;
 
 @Value
 public class FileValueObject {
-    private String name;
-    private String path;
+    String name;
+    String path;
 }

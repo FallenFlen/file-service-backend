@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AdvanceFileService {
+public class FileService {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
