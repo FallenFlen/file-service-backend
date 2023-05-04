@@ -128,7 +128,6 @@ public class FileService {
 
     private String getActuallyExistedFullFilePath(String fullFileMd5) {
         return Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
-                .filter((record) -> fileUtils.exists(record.getPath()))
                 .filter((record) -> fileUtils.validateMd5(record.getMd5(), record.getPath()))
                 .map(FileUploadRecord::getPath)
                 .orElse(null);
@@ -182,13 +181,10 @@ public class FileService {
         Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
                 .ifPresent((record) -> {
                     String path = record.getPath();
-                    boolean exists = fileUtils.exists(path);
-                    if (exists) {
-                        boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
-                        if (!md5Correct) {
-                            fileUtils.delete(path);
-                            fileUploadRecordDomainRepository.deleteById(record.getId());
-                        }
+                    boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
+                    if (md5Correct) {
+                        fileUtils.delete(path);
+                        fileUploadRecordDomainRepository.deleteById(record.getId());
                     } else {
                         fileUploadRecordDomainRepository.deleteById(record.getId());
                     }
@@ -197,7 +193,7 @@ public class FileService {
 
     private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {
         return allChunks.stream()
-                .filter((chunk) -> !fileUtils.exists(chunk.getPath()) || !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
+                .filter((chunk) -> !fileUtils.validateMd5(chunk.getMd5(), chunk.getPath()))
                 .collect(Collectors.toList());
     }
 

@@ -13,12 +13,8 @@ spring:
       max-file-size: 1GB
 
 file:
-  common:
-    upload:
-      base-path: "D:/software/dev/test/upload/common"
-  advance:
-    upload:
-      base-path: "D:/software/dev/test/upload/advance"
+  upload:
+    base-path: "D:/software/dev/test/upload/advance"
 
 mybatis:
   mapper-locations: classpath:mappers/*.xml

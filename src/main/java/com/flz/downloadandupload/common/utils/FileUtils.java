@@ -20,19 +20,17 @@ import java.util.UUID;
 @Component
 @Slf4j
 public class FileUtils implements InitializingBean {
-    @Value("${file.common.upload.base-path}")
-    private String commonUploadBasePathStr;
-    @Value("${file.common.upload.base-path}")
-    private String advanceUploadBasePathStr;
-    private Path commonUploadBasePath;
-    private Path advanceUploadBasePath;
+    @Value("${file..upload.base-path}")
+    private String baseUploadPathStr;
+    private static Path baseUploadPath;
 
     private static final String FILE_SEPARATOR = File.separator;
     private static final String DOT = ".";
     private static final String FILE_NAME_SEPARATOR = "-";
 
     public boolean validateMd5(String currentMd5, String path) {
-        return DigestUtils.md5DigestAsHex(getContent(path)).equals(currentMd5);
+        byte[] content = getContent(path);
+        return exists(path) && DigestUtils.md5DigestAsHex(content).equals(currentMd5);
     }
 
     public void delete(String path) {
@@ -45,6 +43,10 @@ public class FileUtils implements InitializingBean {
 
     public boolean exists(String path) {
         return Files.exists(Path.of(path));
+    }
+
+    public boolean exists(Path path) {
+        return Files.exists(path);
     }
 
     public byte[] getContent(String path) {
@@ -75,10 +77,10 @@ public class FileUtils implements InitializingBean {
                             UUID.randomUUID().toString())
                     .concat(DOT)
                     .concat(suffix);
-            Path filePath = Path.of(commonUploadBasePath.toString()
+            Path filePath = Path.of(baseUploadPath.toString()
                     .concat(FILE_SEPARATOR)
                     .concat(mixedFileName));
-            if (!Set.of(StandardOpenOption.CREATE, StandardOpenOption.CREATE_NEW).contains(option) && !Files.exists(filePath)) {
+            if (!Set.of(StandardOpenOption.CREATE, StandardOpenOption.CREATE_NEW).contains(option) && !exists(filePath)) {
                 Files.createFile(filePath);
             }
             Files.write(filePath, inputStream.readAllBytes(), option);
@@ -101,15 +103,10 @@ public class FileUtils implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.commonUploadBasePath = Path.of(commonUploadBasePathStr.replace("/", FILE_SEPARATOR));
-        this.advanceUploadBasePath = Path.of(advanceUploadBasePathStr.replace("/", FILE_SEPARATOR));
+        baseUploadPath = Path.of(baseUploadPathStr.replace("/", FILE_SEPARATOR));
 
-        if (!Files.exists(commonUploadBasePath)) {
-            Files.createDirectory(commonUploadBasePath);
-        }
-
-        if (!Files.exists(advanceUploadBasePath)) {
-            Files.createDirectory(advanceUploadBasePath);
+        if (!Files.exists(baseUploadPath)) {
+            Files.createDirectory(baseUploadPath);
         }
     }
 }
