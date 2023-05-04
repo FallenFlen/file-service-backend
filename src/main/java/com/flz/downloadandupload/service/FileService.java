@@ -51,13 +51,13 @@ public class FileService {
     public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
-        // 1.整体文件md5检查文件是否已被上传过且未被损坏，如果是则实现秒传
+        // 1.按整体文件md5检查文件是否已被上传过且未被损坏，如果是则实现秒传
         if (!isFullFileExistedAndValid(chunkUploadRequestDTO.getFullFileMd5())) {
             return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                     true, md5, false);
         }
 
-        // 2.by chunk md5，检测单个chunk是否被上传过，如果是则实现秒传
+        // 2.按chunk md5，检测单个chunk是否被上传过且未被损坏，如果是则实现秒传
         Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
         if (fileChunkOptional.isPresent()) {
             FileChunk fileChunk = fileChunkOptional.get();
@@ -101,7 +101,7 @@ public class FileService {
 
         FileValueObject fullFile = fileUtils.uploadToDisk(requestDTO.getFullFileName(),
                 new ByteArrayInputStream(new byte[0]), StandardOpenOption.CREATE_NEW);
-        // 防止大文件oom
+        // 采用追加的方式将chunk的内容写入新文件，不一次性读取所有chunk到内存中，防止oom
         chunkPaths.forEach((path) -> {
             byte[] content = fileUtils.getContent(path);
             fileUtils.append(fullFile.getPath(), new ByteArrayInputStream(content));
@@ -156,6 +156,7 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
         String fullFileMd5 = requestDTO.getFullFileMd5();
         if (isFullFileExistedAndValid(fullFileMd5)) {
