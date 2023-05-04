@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/files/advance")
+@RequestMapping("/files")
 public class FileController {
     private final FileService fileService;
 
