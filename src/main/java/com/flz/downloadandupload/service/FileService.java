@@ -2,7 +2,6 @@ package com.flz.downloadandupload.service;
 
 import com.flz.downloadandupload.common.constant.FileConstant;
 import com.flz.downloadandupload.common.utils.FileUtils;
-import com.flz.downloadandupload.common.utils.TransactionUtils;
 import com.flz.downloadandupload.converter.FileUploadRecordDTOConverter;
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
@@ -44,7 +43,6 @@ public class FileService {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
-    private final TransactionUtils transactionUtils;
     private final FileUploadRecordDTOConverter converter = FileUploadRecordDTOConverter.INSTANCE;
 
     @Transactional
@@ -90,7 +88,7 @@ public class FileService {
 
     @Transactional
     public ChunkMergeResponseDTO merge(ChunkMergeRequestDTO requestDTO) {
-        String fullFileActualPath = getActuallyExistedFullFilePath(requestDTO.getFullFileMd5());
+        String fullFileActualPath = getValidPathByFileMd5(requestDTO.getFullFileMd5());
         if (fullFileActualPath != null) {
             return new ChunkMergeResponseDTO(fullFileActualPath);
         }
@@ -116,23 +114,51 @@ public class FileService {
         FileUploadRecord fileUploadRecord = FileUploadRecord.create(fileUploadRecordCreateCommand);
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
 
-        // 事务提交后清除chunk
-        transactionUtils.runAfterCommit(() -> {
-            allChunks.stream()
-                    .map(FileChunk::getPath)
-                    .filter(fileUtils::exists)
-                    .forEach(fileUtils::delete);
-            fileChunkDomainRepository.deleteByFullFileMd5(requestDTO.getFullFileMd5());
-        });
+        // 清除chunk记录和文件
+        clearChunk(allChunks);
 
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
 
-    private boolean isFullFileExistedAndValid(String fullFileMd5) {
-        return getActuallyExistedFullFilePath(fullFileMd5) != null;
+    @Transactional
+    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
+        String fullFileMd5 = requestDTO.getFullFileMd5();
+        if (isFullFileExistedAndValid(fullFileMd5)) {
+            return new FileExistenceResponseDTO(true, Collections.emptyList());
+        }
+
+        FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
+        fileExistenceResponseDTO.setFullFileExist(false);
+
+        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
+        List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
+        Set<String> damagedChunkIds = damagedChunks.stream()
+                .map(FileChunk::getId)
+                .collect(Collectors.toSet());
+        List<Integer> validChunkNumbers = allChunks.stream()
+                .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
+                .map(FileChunk::getNumber)
+                .distinct()
+                .sorted(Integer::compareTo)
+                .collect(Collectors.toList());
+        fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
+
+        clearChunk(damagedChunks);
+
+        return fileExistenceResponseDTO;
     }
 
-    private String getActuallyExistedFullFilePath(String fullFileMd5) {
+    public List<FileUploadRecordResponseDTO> findAll() {
+        return fileUploadRecordDomainRepository.findAll().stream()
+                .map(converter::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isFullFileExistedAndValid(String fullFileMd5) {
+        return getValidPathByFileMd5(fullFileMd5) != null;
+    }
+
+    private String getValidPathByFileMd5(String fullFileMd5) {
         return Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
                 .filter((record) -> fileUtils.validateMd5(record.getMd5(), record.getPath()))
                 .map(FileUploadRecord::getPath)
@@ -156,45 +182,14 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public FileExistenceResponseDTO checkFileExistenceAndClearDamaged(FileExistenceCheckRequestDTO requestDTO) {
-        String fullFileMd5 = requestDTO.getFullFileMd5();
-        if (isFullFileExistedAndValid(fullFileMd5)) {
-            return new FileExistenceResponseDTO(true, Collections.emptyList());
-        }
-
-        validateOrElseCleanFileUploadRecord(fullFileMd5);
-
-        FileExistenceResponseDTO fileExistenceResponseDTO = new FileExistenceResponseDTO();
-        fileExistenceResponseDTO.setFullFileExist(false);
-
-        List<FileChunk> allChunks = fileChunkDomainRepository.findAllByFullFileMd5(fullFileMd5);
-        Set<String> damagedChunkIds = getDamagedChunks(allChunks).stream()
+    private void clearChunk(List<FileChunk> chunks) {
+        List<String> ids = chunks.stream()
                 .map(FileChunk::getId)
-                .collect(Collectors.toSet());
-        List<Integer> validChunkNumbers = allChunks.stream()
-                .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
-                .map(FileChunk::getNumber)
-                .distinct()
-                .sorted(Integer::compareTo)
                 .collect(Collectors.toList());
-        fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
-
-        return fileExistenceResponseDTO;
-    }
-
-    private void validateOrElseCleanFileUploadRecord(String fullFileMd5) {
-        Optional.ofNullable(fileUploadRecordDomainRepository.findByMd5(fullFileMd5))
-                .ifPresent((record) -> {
-                    String path = record.getPath();
-                    boolean md5Correct = fileUtils.validateMd5(record.getMd5(), path);
-                    if (md5Correct) {
-                        fileUtils.delete(path);
-                        fileUploadRecordDomainRepository.deleteById(record.getId());
-                    } else {
-                        fileUploadRecordDomainRepository.deleteById(record.getId());
-                    }
-                });
+        fileChunkDomainRepository.deleteByIds(ids);
+        chunks.stream()
+                .map(FileChunk::getPath)
+                .forEach(fileUtils::delete);
     }
 
     private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {
@@ -203,9 +198,4 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
-    public List<FileUploadRecordResponseDTO> findAll() {
-        return fileUploadRecordDomainRepository.findAll().stream()
-                .map(converter::toDTO)
-                .collect(Collectors.toList());
-    }
 }
