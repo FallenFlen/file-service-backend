@@ -135,13 +135,13 @@ public class FileService {
         Set<String> damagedChunkIds = damagedChunks.stream()
                 .map(FileChunk::getId)
                 .collect(Collectors.toSet());
-        List<Integer> validChunkNumbers = allChunks.stream()
+        List<Integer> existedAndValidChunkNumbers = allChunks.stream()
                 .filter((chunk) -> !damagedChunkIds.contains(chunk.getId()))
                 .map(FileChunk::getNumber)
                 .distinct()
                 .sorted(Integer::compareTo)
                 .collect(Collectors.toList());
-        fileExistenceResponseDTO.setValidChunkNumbers(validChunkNumbers);
+        fileExistenceResponseDTO.setExistedAndValidChunkNumbers(existedAndValidChunkNumbers);
 
         clearChunk(damagedChunks);
 

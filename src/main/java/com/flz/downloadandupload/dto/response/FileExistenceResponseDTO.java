@@ -13,5 +13,5 @@ import java.util.List;
 @Setter
 public class FileExistenceResponseDTO {
     private Boolean fullFileExist;
-    private List<Integer> validChunkNumbers;
+    private List<Integer> existedAndValidChunkNumbers;
 }
