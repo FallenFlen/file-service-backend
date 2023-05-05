@@ -50,7 +50,7 @@ public class FileService {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
         // 1.按整体文件md5检查文件是否已被上传过且未被损坏，如果是则实现秒传
-        if (!isFullFileExistedAndValid(chunkUploadRequestDTO.getFullFileMd5())) {
+        if (isFullFileExistedAndValid(chunkUploadRequestDTO.getFullFileMd5())) {
             return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                     true, md5, false);
         }
@@ -59,7 +59,7 @@ public class FileService {
         Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
         if (fileChunkOptional.isPresent()) {
             FileChunk fileChunk = fileChunkOptional.get();
-            if (!isFullFileExistedAndValid(fileChunk.getMd5())) {
+            if (isFullFileExistedAndValid(fileChunk.getMd5())) {
                 return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
                         false, md5, true);
             }
@@ -183,6 +183,10 @@ public class FileService {
     }
 
     private void clearChunk(List<FileChunk> chunks) {
+        if (CollectionUtils.isEmpty(chunks)) {
+            return;
+        }
+
         List<String> ids = chunks.stream()
                 .map(FileChunk::getId)
                 .collect(Collectors.toList());
