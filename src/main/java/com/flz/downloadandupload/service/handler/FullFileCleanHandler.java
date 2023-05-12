@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class FullFileCleanHandler implements FileCleanHandler {
+public class FullFileCleanHandler extends AbstractFileCleanHandler {
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
 
     @Override
-    public void handle(List<? extends File> files) {
+    protected void deleteDbRecords(List<? extends File> files) {
         List<String> ids = files.stream()
                 .map(File::withUniqueKey)
                 .collect(Collectors.toList());

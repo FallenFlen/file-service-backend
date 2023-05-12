@@ -30,6 +30,10 @@ public class FileUtils implements InitializingBean {
     }
 
     public void delete(String path) {
+        if (!exists(path)) {
+            return;
+        }
+
         try {
             Files.delete(Path.of(path));
         } catch (IOException e) {
