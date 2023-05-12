@@ -2,6 +2,7 @@ package com.flz.downloadandupload.domain.aggregate;
 
 import com.flz.downloadandupload.domain.aggregate.base.AuditAggregateRoot;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
+import com.flz.downloadandupload.domain.enums.FileType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class FileChunk extends AuditAggregateRoot {
+public class FileChunk extends AuditAggregateRoot implements File {
     private Integer number;
     private Long standardSize;
     private Long currentSize;
@@ -36,5 +37,21 @@ public class FileChunk extends AuditAggregateRoot {
                 .fullFileMd5(command.getFullFileMd5())
                 .md5(command.getMd5())
                 .build();
+    }
+
+
+    @Override
+    public String withMd5() {
+        return this.md5;
+    }
+
+    @Override
+    public String withPath() {
+        return this.path;
+    }
+
+    @Override
+    public FileType withFileType() {
+        return FileType.CHUNK;
     }
 }
