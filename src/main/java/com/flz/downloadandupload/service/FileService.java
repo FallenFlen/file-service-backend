@@ -177,6 +177,7 @@ public class FileService {
 
         List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
         if (!CollectionUtils.isEmpty(damagedChunks)) {
+            cleanFiles(damagedChunks);
             throw new BusinessException("file chunks damaged");
         }
 
