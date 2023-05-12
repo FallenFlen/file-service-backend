@@ -25,8 +25,11 @@ public class FileUtils implements InitializingBean {
     private static Path baseUploadPath;
 
     public boolean validateMd5(String currentMd5, String path) {
+        if (!exists(path)) {
+            return false;
+        }
         byte[] content = getContent(path);
-        return exists(path) && DigestUtils.md5DigestAsHex(content).equals(currentMd5);
+        return DigestUtils.md5DigestAsHex(content).equals(currentMd5);
     }
 
     public void delete(String path) {
