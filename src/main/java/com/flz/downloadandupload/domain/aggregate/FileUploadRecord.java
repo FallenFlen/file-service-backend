@@ -36,8 +36,8 @@ public class FileUploadRecord extends AuditAggregateRoot implements File {
     }
 
     @Override
-    public String withMd5() {
-        return this.md5;
+    public String withUniqueKey() {
+        return getId();
     }
 
     @Override

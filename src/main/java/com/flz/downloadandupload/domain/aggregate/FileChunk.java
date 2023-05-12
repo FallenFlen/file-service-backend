@@ -39,10 +39,9 @@ public class FileChunk extends AuditAggregateRoot implements File {
                 .build();
     }
 
-
     @Override
-    public String withMd5() {
-        return this.md5;
+    public String withUniqueKey() {
+        return getId();
     }
 
     @Override

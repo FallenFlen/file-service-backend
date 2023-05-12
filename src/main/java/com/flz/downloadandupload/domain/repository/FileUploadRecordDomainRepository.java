@@ -13,5 +13,8 @@ public interface FileUploadRecordDomainRepository {
 
     void deleteById(String id);
 
+    void deleteByIds(List<String> ids);
+
+
     List<FileUploadRecord> findAll();
 }

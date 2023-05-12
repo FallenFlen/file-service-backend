@@ -6,12 +6,12 @@ import org.springframework.context.ApplicationEvent;
 import java.util.List;
 
 public class FileCleanEvent extends ApplicationEvent {
-    public FileCleanEvent(List<File> source) {
+    public FileCleanEvent(List<? extends File> source) {
         super(source);
     }
 
     @Override
-    public List<File> getSource() {
-        return (List<File>) super.getSource();
+    public List<? extends File> getSource() {
+        return (List<? extends File>) super.getSource();
     }
 }

@@ -18,6 +18,7 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
+import com.flz.downloadandupload.event.FileCleanEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -190,13 +191,7 @@ public class FileService {
             return;
         }
 
-//        List<String> ids = chunks.stream()
-//                .map(FileChunk::getId)
-//                .collect(Collectors.toList());
-//        fileChunkDomainRepository.deleteByIds(ids);
-//        chunks.stream()
-//                .map(FileChunk::getPath)
-//                .forEach(fileUtils::delete);
+        publisher.publishEvent(new FileCleanEvent(files));
     }
 
     private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {

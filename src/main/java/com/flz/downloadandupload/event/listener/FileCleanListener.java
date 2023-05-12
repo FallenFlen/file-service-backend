@@ -20,7 +20,7 @@ public class FileCleanListener {
     @Async
     @EventListener
     public void listen(FileCleanEvent event) {
-        List<File> files = event.getSource();
+        List<? extends File> files = event.getSource();
         Map<FileType, List<File>> fileGroup = files.stream()
                 .collect(Collectors.groupingBy(File::withFileType));
         fileGroup.forEach((k, v) -> {
