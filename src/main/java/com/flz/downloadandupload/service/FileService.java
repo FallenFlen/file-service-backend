@@ -3,6 +3,7 @@ package com.flz.downloadandupload.service;
 import com.flz.downloadandupload.common.constant.FileConstant;
 import com.flz.downloadandupload.common.utils.FileUtils;
 import com.flz.downloadandupload.converter.FileUploadRecordDTOConverter;
+import com.flz.downloadandupload.domain.aggregate.File;
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
@@ -20,6 +21,7 @@ import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +45,7 @@ public class FileService {
     private final FileChunkDomainRepository fileChunkDomainRepository;
     private final FileUploadRecordDomainRepository fileUploadRecordDomainRepository;
     private final FileUtils fileUtils;
+    private final ApplicationEventPublisher publisher;
     private final FileUploadRecordDTOConverter converter = FileUploadRecordDTOConverter.INSTANCE;
 
     @Transactional
@@ -115,7 +118,7 @@ public class FileService {
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
 
         // 清除chunk记录和文件
-        clearChunk(allChunks);
+        cleanFiles(allChunks);
 
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
@@ -143,7 +146,7 @@ public class FileService {
                 .collect(Collectors.toList());
         fileExistenceResponseDTO.setExistedAndValidChunkNumbers(existedAndValidChunkNumbers);
 
-        clearChunk(damagedChunks);
+        cleanFiles(damagedChunks);
 
         return fileExistenceResponseDTO;
     }
@@ -182,18 +185,18 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
-    private void clearChunk(List<FileChunk> chunks) {
-        if (CollectionUtils.isEmpty(chunks)) {
+    private void cleanFiles(List<? extends File> files) {
+        if (CollectionUtils.isEmpty(files)) {
             return;
         }
 
-        List<String> ids = chunks.stream()
-                .map(FileChunk::getId)
-                .collect(Collectors.toList());
-        fileChunkDomainRepository.deleteByIds(ids);
-        chunks.stream()
-                .map(FileChunk::getPath)
-                .forEach(fileUtils::delete);
+//        List<String> ids = chunks.stream()
+//                .map(FileChunk::getId)
+//                .collect(Collectors.toList());
+//        fileChunkDomainRepository.deleteByIds(ids);
+//        chunks.stream()
+//                .map(FileChunk::getPath)
+//                .forEach(fileUtils::delete);
     }
 
     private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {
