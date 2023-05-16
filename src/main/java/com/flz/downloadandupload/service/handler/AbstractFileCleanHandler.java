@@ -21,13 +21,10 @@ public abstract class AbstractFileCleanHandler implements FileCleanHandler {
     }
 
     private void cleanDiskFile(List<? extends File> files) {
-        try {
-            files.stream()
-                    .map(File::withPath)
-                    .forEach(fileUtils::delete);
-        } catch (Exception e) {
-            log.error("[AbstractFileCleanHandler] clean disk file failed:", e);
-        }
+        files.stream()
+                .map(File::withPath)
+                .forEach(fileUtils::delete);
+        log.info("[AbstractFileCleanHandler] {} files cleaned", files.size());
     }
 
     protected abstract void deleteDbRecords(List<? extends File> files);
