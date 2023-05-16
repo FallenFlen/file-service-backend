@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.persist.repository.impl;
 
 import com.flz.downloadandupload.domain.aggregate.FileChunk;
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.domain.repository.FileChunkDomainRepository;
 import com.flz.downloadandupload.exception.NotFoundException;
 import com.flz.downloadandupload.persist.converter.FileChunkDoConverter;
@@ -58,5 +59,12 @@ public class FileChunkDomainRepositoryImpl implements FileChunkDomainRepository 
     public Optional<FileChunk> findByMd5(String md5) {
         return fileChunkJDBCRepository.findFirstByMd5AndDeletedIsFalse(md5)
                 .map(converter::toDomain);
+    }
+
+    @Override
+    public List<FileChunk> findAllByStatusNotEqualAndLimit(FileStatus status, int limit) {
+        return fileChunkJDBCRepository.findAllByStatusNotEqualAndDeletedIsFalseAndLimit(status, limit).stream()
+                .map(converter::toDomain)
+                .collect(Collectors.toList());
     }
 }

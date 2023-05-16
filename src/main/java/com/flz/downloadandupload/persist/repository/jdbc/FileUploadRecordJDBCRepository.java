@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.persist.repository.jdbc;
 
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.persist.dataobject.FileUploadRecordDO;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -19,4 +20,8 @@ public interface FileUploadRecordJDBCRepository extends CrudRepository<FileUploa
     @Modifying
     @Query("delete from file_upload_record where id in:ids")
     void deleteAllByIds(@Param("ids") List<String> ids);
+
+
+    @Query("select * from `file_upload_record` where `status`!=:status and `deleted`='0' limit :limit ")
+    List<FileUploadRecordDO> findAllByStatusNotEqualAndLimit(FileStatus status, int limit);
 }

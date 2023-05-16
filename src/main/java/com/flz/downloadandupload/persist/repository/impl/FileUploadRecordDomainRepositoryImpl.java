@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.persist.repository.impl;
 
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainRepository;
 import com.flz.downloadandupload.exception.NotFoundException;
 import com.flz.downloadandupload.persist.converter.FileUploadRecordDOConverter;
@@ -53,6 +54,13 @@ public class FileUploadRecordDomainRepositoryImpl implements FileUploadRecordDom
     @Override
     public List<FileUploadRecord> findAll() {
         return jdbcRepository.findAll().stream()
+                .map(converter::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FileUploadRecord> findAllByStatusNotEqualAndLimit(FileStatus status, int limit) {
+        return jdbcRepository.findAllByStatusNotEqualAndLimit(status, limit).stream()
                 .map(converter::toDomain)
                 .collect(Collectors.toList());
     }

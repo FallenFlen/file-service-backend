@@ -1,6 +1,7 @@
 package com.flz.downloadandupload.domain.repository;
 
 import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
+import com.flz.downloadandupload.domain.enums.FileStatus;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public interface FileUploadRecordDomainRepository extends FileRepository<FileUpl
 
     void deleteByIds(List<String> ids);
 
-
     List<FileUploadRecord> findAll();
+
+    List<FileUploadRecord> findAllByStatusNotEqualAndLimit(FileStatus status, int limit);
 }
