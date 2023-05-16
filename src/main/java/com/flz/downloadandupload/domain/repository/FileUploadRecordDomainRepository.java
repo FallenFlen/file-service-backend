@@ -4,7 +4,7 @@ import com.flz.downloadandupload.domain.aggregate.FileUploadRecord;
 
 import java.util.List;
 
-public interface FileUploadRecordDomainRepository {
+public interface FileUploadRecordDomainRepository extends FileRepository<FileUploadRecord> {
     void saveAll(List<FileUploadRecord> fileUploadRecords);
 
     FileUploadRecord findByPath(String path);

@@ -18,7 +18,7 @@ import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
 import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
-import com.flz.downloadandupload.event.FileCleanEvent;
+import com.flz.downloadandupload.event.FileStatusChangeEvent;
 import com.flz.downloadandupload.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +37,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -119,7 +120,7 @@ public class FileService {
         fileUploadRecordDomainRepository.saveAll(List.of(fileUploadRecord));
 
         // 清除chunk记录和文件
-        cleanFiles(allChunks);
+        changeFileStatus(allChunks, File::use);
 
         return new ChunkMergeResponseDTO(fileUploadRecord.getPath());
     }
@@ -147,7 +148,7 @@ public class FileService {
                 .collect(Collectors.toList());
         fileExistenceResponseDTO.setExistedAndValidChunkNumbers(existedAndValidChunkNumbers);
 
-        cleanFiles(damagedChunks);
+        changeFileStatus(damagedChunks, File::damage);
 
         return fileExistenceResponseDTO;
     }
@@ -177,7 +178,7 @@ public class FileService {
 
         List<FileChunk> damagedChunks = getDamagedChunks(allChunks);
         if (!CollectionUtils.isEmpty(damagedChunks)) {
-            cleanFiles(damagedChunks);
+            changeFileStatus(damagedChunks, File::damage);
             throw new BusinessException("file chunks damaged");
         }
 
@@ -187,12 +188,12 @@ public class FileService {
                 .collect(Collectors.toList());
     }
 
-    private void cleanFiles(List<? extends File> files) {
+    private void changeFileStatus(List<? extends File> files, Consumer<File> statusChangeConsumer) {
         if (CollectionUtils.isEmpty(files)) {
             return;
         }
 
-        publisher.publishEvent(new FileCleanEvent(files));
+        publisher.publishEvent(new FileStatusChangeEvent(files, statusChangeConsumer));
     }
 
     private List<FileChunk> getDamagedChunks(List<FileChunk> allChunks) {

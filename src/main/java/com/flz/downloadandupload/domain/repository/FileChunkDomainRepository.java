@@ -5,7 +5,7 @@ import com.flz.downloadandupload.domain.aggregate.FileChunk;
 import java.util.List;
 import java.util.Optional;
 
-public interface FileChunkDomainRepository {
+public interface FileChunkDomainRepository extends FileRepository<FileChunk> {
     void saveAll(List<FileChunk> fileChunks);
 
     FileChunk findById(String id);

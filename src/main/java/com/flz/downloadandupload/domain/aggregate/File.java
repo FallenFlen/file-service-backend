@@ -8,4 +8,12 @@ public interface File {
     String withPath();
 
     FileType withFileType();
+
+    default void damage() {
+
+    }
+
+    default void use() {
+
+    }
 }
