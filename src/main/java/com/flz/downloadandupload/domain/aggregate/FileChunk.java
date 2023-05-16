@@ -2,6 +2,7 @@ package com.flz.downloadandupload.domain.aggregate;
 
 import com.flz.downloadandupload.domain.aggregate.base.AuditAggregateRoot;
 import com.flz.downloadandupload.domain.command.FileChunkCreateCommand;
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.domain.enums.FileType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class FileChunk extends AuditAggregateRoot implements File {
     private Long currentSize;
     private String path;
     private String md5;
+    private FileStatus status;
     private String fileUploadRecordId;
     private Long totalChunkCount;
     private String fullFileName;
@@ -36,7 +38,16 @@ public class FileChunk extends AuditAggregateRoot implements File {
                 .fullFileName(command.getFullFileName())
                 .fullFileMd5(command.getFullFileMd5())
                 .md5(command.getMd5())
+                .status(FileStatus.NORMAL)
                 .build();
+    }
+
+    public void damage() {
+        this.status = FileStatus.DAMAGED;
+    }
+
+    public void use() {
+        this.status = FileStatus.USED;
     }
 
     @Override

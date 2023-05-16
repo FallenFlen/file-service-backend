@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.persist.dataobject;
 
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.persist.dataobject.base.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class FileChunkDO extends BaseDO {
     private Long currentSize;
     private String path;
     private String md5;
+    private FileStatus status;
     private String fileUploadRecordId;
     private Long totalChunkCount;
     private String fullFileName;

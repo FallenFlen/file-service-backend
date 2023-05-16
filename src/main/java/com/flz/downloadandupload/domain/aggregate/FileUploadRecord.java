@@ -2,7 +2,7 @@ package com.flz.downloadandupload.domain.aggregate;
 
 import com.flz.downloadandupload.domain.aggregate.base.AuditAggregateRoot;
 import com.flz.downloadandupload.domain.command.FileUploadRecordCreateCommand;
-import com.flz.downloadandupload.domain.enums.FileSizeType;
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.domain.enums.FileType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,8 +22,8 @@ public class FileUploadRecord extends AuditAggregateRoot implements File {
     private String name;
     private String path;
     private Long size;
-    private FileSizeType type;
     private String md5;
+    private FileStatus status;
 
     public static FileUploadRecord create(FileUploadRecordCreateCommand command) {
         return FileUploadRecord.builder()
@@ -31,8 +31,12 @@ public class FileUploadRecord extends AuditAggregateRoot implements File {
                 .path(command.getPath())
                 .size(command.getSize())
                 .md5(command.getMd5())
-                .type(FileSizeType.calculate(command.getSize(), LARGE_FILE_SIZE_CRITICAL_VALUE))
+                .status(FileStatus.NORMAL)
                 .build();
+    }
+
+    public void damage() {
+        this.status = FileStatus.DAMAGED;
     }
 
     @Override
