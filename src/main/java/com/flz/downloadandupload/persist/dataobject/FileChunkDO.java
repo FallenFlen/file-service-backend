@@ -20,7 +20,6 @@ public class FileChunkDO extends BaseDO {
     private String path;
     private String md5;
     private FileStatus status;
-    private String fileUploadRecordId;
     private Long totalChunkCount;
     private String fullFileName;
     private String fullFileMd5;
