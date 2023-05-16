@@ -21,6 +21,6 @@ public interface FileChunkJDBCRepository extends CrudRepository<FileChunkDO, Str
     @Query("delete from `file_chunk` where `full_file_md5`=:md5")
     List<Integer> deleteAllByFullFileMd5(String md5);
 
-    @Query("select * from `file_chunk` where `status`!=:status and `deleted`='0' limit :limit ")
+    @Query("select * from `file_chunk` where (`status`!=:status or `status` is null) and `deleted`='0' limit :limit")
     List<FileChunkDO> findAllByStatusNotEqualAndDeletedIsFalseAndLimit(@Param("status") FileStatus status, @Param("limit") int limit);
 }

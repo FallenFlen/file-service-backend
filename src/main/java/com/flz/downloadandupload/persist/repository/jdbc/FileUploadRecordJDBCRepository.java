@@ -18,10 +18,10 @@ public interface FileUploadRecordJDBCRepository extends CrudRepository<FileUploa
     List<FileUploadRecordDO> findAll();
 
     @Modifying
-    @Query("delete from file_upload_record where id in:ids")
+    @Query("delete from file_upload_record where id in(:ids)")
     void deleteAllByIds(@Param("ids") List<String> ids);
 
 
-    @Query("select * from `file_upload_record` where `status`!=:status and `deleted`='0' limit :limit ")
+    @Query("select * from `file_upload_record` where (`status`!=:status or `status` is null) and `deleted`='0' limit :limit")
     List<FileUploadRecordDO> findAllByStatusNotEqualAndLimit(FileStatus status, int limit);
 }
