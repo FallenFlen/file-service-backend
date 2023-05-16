@@ -1,5 +1,6 @@
 package com.flz.downloadandupload.persist.dataobject;
 
+import com.flz.downloadandupload.domain.enums.FileStatus;
 import com.flz.downloadandupload.persist.dataobject.base.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,4 +18,5 @@ public class FileUploadRecordDO extends BaseDO {
     private String path;
     private Long size;
     private String md5;
+    private FileStatus status;
 }
