@@ -10,6 +10,7 @@ import com.flz.downloadandupload.domain.repository.FileUploadRecordDomainReposit
 import com.flz.downloadandupload.event.FileCleanEvent;
 import com.flz.downloadandupload.service.handler.FileCleanHandlerFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FileCleanListener {
@@ -30,6 +32,11 @@ public class FileCleanListener {
     @EventListener
     public void listen(FileCleanEvent event) {
         List<File> files = fetchStatusChangedFiles();
+        log.info("[FileCleanListener] {} files need to be cleaned", files.size());
+        if (files.isEmpty()) {
+            return;
+        }
+
         Map<FileType, List<File>> fileGroup = files.stream()
                 .collect(Collectors.groupingBy(File::withFileType));
         fileGroup.forEach((k, v) -> {
