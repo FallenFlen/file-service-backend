@@ -4,7 +4,6 @@ import com.flz.downloadandupload.dto.request.ChunkMergeRequestDTO;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
 import com.flz.downloadandupload.dto.request.FileExistenceCheckRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
-import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
 import com.flz.downloadandupload.service.FileService;
@@ -41,8 +40,8 @@ public class FileController {
 
     @PostMapping("/chunk")
     @ResponseStatus(HttpStatus.CREATED)
-    public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO requestDTO) throws IOException {
-        return fileService.uploadChunk(requestDTO);
+    public void uploadChunk(ChunkUploadRequestDTO requestDTO) throws IOException {
+        fileService.uploadChunk(requestDTO);
     }
 
     @PostMapping("/chunk/merge")

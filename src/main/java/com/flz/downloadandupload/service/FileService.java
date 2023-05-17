@@ -15,7 +15,6 @@ import com.flz.downloadandupload.dto.request.ChunkMergeRequestDTO;
 import com.flz.downloadandupload.dto.request.ChunkUploadRequestDTO;
 import com.flz.downloadandupload.dto.request.FileExistenceCheckRequestDTO;
 import com.flz.downloadandupload.dto.response.ChunkMergeResponseDTO;
-import com.flz.downloadandupload.dto.response.ChunkUploadResponseDTO;
 import com.flz.downloadandupload.dto.response.FileExistenceResponseDTO;
 import com.flz.downloadandupload.dto.response.FileUploadRecordResponseDTO;
 import com.flz.downloadandupload.event.FileStatusChangeEvent;
@@ -51,26 +50,11 @@ public class FileService {
     private final FileUploadRecordDTOConverter converter = FileUploadRecordDTOConverter.INSTANCE;
 
     @Transactional
-    public ChunkUploadResponseDTO uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
+    public void uploadChunk(ChunkUploadRequestDTO chunkUploadRequestDTO) throws IOException {
         MultipartFile chunk = chunkUploadRequestDTO.getChunk();
         String md5 = DigestUtils.md5DigestAsHex(chunk.getInputStream());
-        // 1.按整体文件md5检查文件是否已被上传过且未被损坏，如果是则实现秒传
-        if (isFullFileExistedAndValid(chunkUploadRequestDTO.getFullFileMd5())) {
-            return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
-                    true, md5, false);
-        }
 
-        // 2.按chunk md5，检测单个chunk是否被上传过且未被损坏，如果是则实现秒传
-        Optional<FileChunk> fileChunkOptional = fileChunkDomainRepository.findByMd5(md5);
-        if (fileChunkOptional.isPresent()) {
-            FileChunk fileChunk = fileChunkOptional.get();
-            if (isFullFileExistedAndValid(fileChunk.getMd5())) {
-                return new ChunkUploadResponseDTO(chunkUploadRequestDTO.getFullFileMd5(),
-                        false, md5, true);
-            }
-        }
-
-        // 3.分块文件上传到disk,将分块信息存入db
+        // 分块文件上传到disk,将分块信息存入db
         FileValueObject chunkFile = fileUtils.uploadToDisk(
                 chunkUploadRequestDTO.getFullFileName().concat(FileConstant.CHUNK_SUFFIX),
                 chunk.getInputStream(),
@@ -87,8 +71,6 @@ public class FileService {
                 .build();
         FileChunk fileChunk = FileChunk.create(command);
         fileChunkDomainRepository.saveAll(List.of(fileChunk));
-
-        return new ChunkUploadResponseDTO(fileChunk.getFullFileMd5(), false, fileChunk.getMd5(), false);
     }
 
     @Transactional
